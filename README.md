@@ -2,7 +2,7 @@
 
 This extension adds bounce handling to CiviCRM's transactional emails.
 
-CiviCRM by default only performs bounce handling when sending via CiviMail, but not when sending transactional emails such as scheduled reminders, event registrations, contribution receipts and the like.
+CiviCRM by default only performs bounce handling when sending via CiviMail, but not when sending transactional emails such as scheduled reminders, event registrations, contribution receipts and the like. This extension addresses that limitation.
 
 ## Author
 
