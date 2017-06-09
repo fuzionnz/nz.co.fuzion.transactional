@@ -27,6 +27,10 @@ Bounce reporting, delivery, open and click tracking should work as per regular C
 * It uses a custom template for the mailing summary report. It's replaced using a hook instead of an override.
 * This extension should work for 4.6 CiviCRM.
 
+## Sponsorship
+
+The development of this extension was financially sponsored by [Agileware] (https://agileware.com.au) to give back to the CiviCRM community and support Agileware's CiviCRM customers. Contact Agileware for CiviCRM support and development services in Australia, https://agileware.com.au.
+
 ## Support
 
 This extension is contributed by [Fuzion Aotearoa](https://www.fuzion.co.nz). Contact us for professional support and development requests.
