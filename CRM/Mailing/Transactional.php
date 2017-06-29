@@ -283,6 +283,7 @@ class CRM_Mailing_Transactional {
       $recipient->save();
 
       // open tracking
+      $params['html'] = CRM_Utils_Array::value('html', $params, '');
       $params['html'] .= "\n" . '<img src="' . $config->userFrameworkResourceURL .
         "extern/open.php?q=$event_queue_id\" width='1' height='1' alt='' border='0'>";
 
