@@ -43,6 +43,29 @@ function transactional_civicrm_alterTemplateFile($formName, &$form, $context, &$
 }
 
 /**
+ * Implements hook_civicrm_searchColumns()
+ *
+ * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_searchColumns
+ */
+function transactional_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) {
+  if ($objectName == 'mailing' && count($headers) == 3) {
+    $headers['activity'] = array('name' => 'Activity');
+    $activity = civicrm_api3('OptionValue', 'getsingle', array(
+      'return' => array("value"),
+      'name' => "ReceiptActivity",
+    ));
+    foreach ($rows as $queueId => $val) {
+      if (!$queueId) {
+        continue;
+      }
+      $activityId = CRM_Core_DAO::singleValueQuery("SELECT receipt_activity_id FROM civicrm_receipient_receipt WHERE queue_id = {$queueId}");
+      $activityURL = CRM_Utils_System::url('civicrm/activity', "atype={$activity['value']}&action=view&reset=1&id=$activityId");
+      $rows[$queueId]['activity'] = "<a href='$activityURL' title='Go to Receipt Activity'>Receipt Activity</a>";
+    }
+  }
+}
+
+/**
  * Implements hook_civicrm_buildForm()
  *
  * Just stash the contact ID away for later use.
@@ -79,6 +102,21 @@ function transactional_civicrm_xmlMenu(&$files) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
 function transactional_civicrm_install() {
+  CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_receipient_receipt` (
+    `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT \'Unique ID\',
+    `queue_id` int(10)    COMMENT \'Event Queue id\',
+    `receipt_activity_id` int(10)    COMMENT \'Activity id of the receipt.\',
+      PRIMARY KEY ( `id` )
+    )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+  ');
+
+  civicrm_api3('OptionValue', 'create', array(
+    'option_group_id' => "activity_type",
+    'label' => "Receipt",
+    'name' => "ReceiptActivity",
+    'description' => "Receipt Sent",
+    'icon' => "fa-envelope-o",
+  ));
   _transactional_civix_civicrm_install();
 }
 
@@ -88,6 +126,14 @@ function transactional_civicrm_install() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
 function transactional_civicrm_uninstall() {
+  $activity = civicrm_api3('OptionValue', 'getsingle', array(
+    'return' => array("id"),
+    'name' => "ReceiptActivity",
+  ));
+  civicrm_api3('OptionValue', 'delete', array(
+    'id' => $activity['id'],
+  ));
+  CRM_Core_DAO::executeQuery("DROP TABLE civicrm_receipient_receipt");
   _transactional_civix_civicrm_uninstall();
 }
 
