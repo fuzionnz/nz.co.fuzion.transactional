@@ -29,7 +29,7 @@ Bounce reporting, delivery, open and click tracking should work as per regular C
 
 ## Sponsorship
 
-The development of this extension was financially sponsored by [Agileware] (https://agileware.com.au) to give back to the CiviCRM community and support Agileware's CiviCRM customers. Contact Agileware for CiviCRM support and development services in Australia, https://agileware.com.au.
+The development of this extension was financially sponsored by [Agileware](https://agileware.com.au) to give back to the CiviCRM community and support Agileware's CiviCRM customers. Contact Agileware for CiviCRM support and development services in Australia.
 
 ## Support
 
