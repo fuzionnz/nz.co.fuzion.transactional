@@ -27,7 +27,7 @@ class CRM_Mailing_Transactional {
 
   /**
    * The presence of any of these query vars in a URL will prevent it from being click tracked.
-   * 
+   *
    * @var array $dont_track_query_vars
    */
   protected $dont_track_query_vars = array('cid', 'cs');
@@ -42,7 +42,7 @@ class CRM_Mailing_Transactional {
 
   /**
    * This array holds the mailing and job IDs for all transactional mailings.
-   * 
+   *
    * @var array $mailings
    */
   protected $mailings = array();
@@ -63,7 +63,7 @@ class CRM_Mailing_Transactional {
 
   /**
    * Get the singleton.
-   * 
+   *
    * @return CRM_Bounce_Helper
    */
   public static function singleton() {
@@ -75,7 +75,7 @@ class CRM_Mailing_Transactional {
 
   /**
    * This should be called from hook_civicrm_postEmailSend() to mark the message as delivered.
-   * 
+   *
    * @param array $params Mail parameters
    * @return voic
    */
@@ -86,11 +86,24 @@ class CRM_Mailing_Transactional {
     $delivered->event_queue_id = $parts[2];
     $delivered->time_stamp = date('YmdHis');
     $delivered->save();
+
+    // check if an activityId was added in hook_civicrm_alterMailParams
+    // if so, update the activity's status and add a target_contact_id
+    if (!empty($params['receipt_activity_id'])) {
+      $activityParams = array(
+        'id' => $params['receipt_activity_id'],
+        'subject' => 'Receipt Sent - ' .  CRM_Utils_Array::value('subject', $params),
+        'details' => CRM_Utils_Array::value('html', $params),
+        'status_id' => 'Completed',
+        'target_contact_id' => CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Email', $params['toEmail'], 'contact_id', 'email'),
+      );
+      $result = civicrm_api3('activity', 'create', $activityParams);
+    }
   }
 
   /**
    * Get the contact and email IDs based on the info passed in $params.
-   * 
+   *
    * @param  array $params The params passed to hook_civicrm_alterMailParams.
    * @return array An array containing the derived contact and email IDs.
    */
@@ -153,7 +166,7 @@ class CRM_Mailing_Transactional {
   /**
    * Given the name of a mailing, get the mailing and encompassing job ID.
    * Create them if needed.
-   * 
+   *
    * @param  string $name Name of the mailing.
    * @return array An array containing the mailing ID and the job ID for the requested mailing.
    */
@@ -199,7 +212,7 @@ class CRM_Mailing_Transactional {
 
   /**
    * Determine if the mailing is transactional.
-   * 
+   *
    * @param  int $mailing_id The mailing ID to check.
    * @return boolean Whether the mailing is transactional or not.
    */
@@ -214,7 +227,7 @@ class CRM_Mailing_Transactional {
 
   /**
    * Set the contact ID of form.
-   * 
+   *
    * @param int $contact_id The contact ID to save for possible check later.
    */
   public function setFormContact($contact_id) {
@@ -222,15 +235,43 @@ class CRM_Mailing_Transactional {
   }
 
   /**
+   * Start recording receipt.
+   *
+   * @param array &$params The params passed to hook_civicrm_alterMailParams.
+   */
+  public function initiateReceipt(&$params) {
+    if (empty($params['receipt_activity_id']) && !empty($params['valueName'])) {
+      $valueName = explode('_', $params['valueName']);
+
+      if (!empty($valueName[2]) && $valueName[2] == 'receipt') {
+        $activityParams = array(
+          'source_contact_id' => CRM_Utils_Array::value('contactId', $params),
+          'activity_type_id' => "ReceiptActivity",
+          'source_record_id' => CRM_Utils_Array::value('contributionId', $params),
+          'status_id' => "Scheduled",
+        );
+
+        $id = CRM_Core_Session::getLoggedInContactID();
+        if ($id) {
+          $activityParams['source_contact_id'] = $id;
+        }
+        $result = civicrm_api3('activity', 'create', $activityParams);
+        $params['receipt_activity_id'] = $result['id'];
+      }
+    }
+  }
+
+  /**
    * Set VERP headers so CiviMail will properly process a bounce.
    * Also do what's necessary to report things including open and click tracking.
-   * 
+   *
    * @param  array &$params The params passed to hook_civicrm_alterMailParams.
    * @param  boolean $setReturnPath Whether to set the Return-Path. If FALSE, only X-CiviMail-Bounce will be set. Mainly for testing purposes.
    * @return void
    */
   public function verpify(&$params, $setReturnPath = TRUE) {
-  
+    $this->initiateReceipt($params);
+
     list($mailing_id, $job_id) = $this->getMailingIds(self::MAILING_NAME . (self::BY_SENDER ? " ({$params['groupName']})" : ''));
     list($contact_id, $email_id) = $this->getContactAndEmailIds($params);
 
@@ -281,6 +322,13 @@ class CRM_Mailing_Transactional {
       $recipient->contact_id = $contact_id;
       $recipient->email_id = $email_id;
       $recipient->save();
+
+      if (!empty($params['receipt_activity_id']) && $event_queue_id) {
+        $insertSQL = "INSERT INTO
+          civicrm_receipient_receipt (queue_id, receipt_activity_id)
+          VALUES ({$event_queue_id}, {$params['receipt_activity_id']})";
+        CRM_Core_DAO::executeQuery($insertSQL);
+      }
 
       // open tracking
       $params['html'] = CRM_Utils_Array::value('html', $params, '');
