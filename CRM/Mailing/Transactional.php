@@ -176,7 +176,7 @@ class CRM_Mailing_Transactional {
       $api = civicrm_api3('Mailing', 'create', array(
         'sequential' => 1,
         'name' => $name,
-        'created_id' => 1,
+        'created_id' => 'user_contact_id',
         'header_id' => NULL,
         'footer_id' => NULL,
         'reply_id' => NULL,
