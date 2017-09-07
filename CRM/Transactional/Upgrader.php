@@ -138,7 +138,7 @@ class CRM_Transactional_Upgrader extends CRM_Transactional_Upgrader_Base {
    */
   public function upgrade_4700() {
     $this->ctx->log->info('Applying update 4700');
-    CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_receipient_receipt` (
+    CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_recipient_receipt` (
       `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT \'Unique ID\',
       `queue_id` int(10)    COMMENT \'Event Queue id\',
       `receipt_activity_id` int(10)    COMMENT \'Activity id of the receipt.\',
@@ -153,6 +153,12 @@ class CRM_Transactional_Upgrader extends CRM_Transactional_Upgrader_Base {
       'description' => "Receipt Sent",
       'icon' => "fa-envelope-o",
     ));
+    return TRUE;
+  }
+
+  public function upgrade_4701() {
+    $this->ctx->log->info('Applying update 4701');
+    CRM_Core_DAO::executeQuery('RENAME TABLE  `civicrm_receipient_receipt` TO  `civicrm_recipient_receipt`');
     return TRUE;
   }
 
