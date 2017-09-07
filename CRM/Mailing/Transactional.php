@@ -77,7 +77,6 @@ class CRM_Mailing_Transactional {
    * This should be called from hook_civicrm_postEmailSend() to mark the message as delivered.
    *
    * @param array $params Mail parameters
-   * @return voic
    */
   public function delivered($params) {
     $parts = explode(CRM_Core_Config::singleton()->verpSeparator, $params['returnPath']);
@@ -171,7 +170,6 @@ class CRM_Mailing_Transactional {
    * @return array An array containing the mailing ID and the job ID for the requested mailing.
    */
   public function getMailingIds($name) {
-
     if (empty($this->mailings[$name])) {
       $api = civicrm_api3('Mailing', 'create', array(
         'sequential' => 1,
@@ -202,7 +200,7 @@ class CRM_Mailing_Transactional {
         'mailing_id' => $mailing['id'],
         'job_id' => $job->id,
       );
-      // save the mailings to the civicrm_setting table
+      // Save the mailings to the civicrm_setting table.
       civicrm_api3('Setting', 'create', array(
         'transactional_mailings' => $this->mailings,
       ));
@@ -217,7 +215,7 @@ class CRM_Mailing_Transactional {
    * @return boolean Whether the mailing is transactional or not.
    */
   public function isTransactionalMailing($mailing_id) {
-    foreach($this->mailings as $mailing) {
+    foreach ($this->mailings as $mailing) {
       if ($mailing['mailing_id'] == $mailing_id) {
         return TRUE;
       }
@@ -266,7 +264,7 @@ class CRM_Mailing_Transactional {
    * Also do what's necessary to report things including open and click tracking.
    *
    * @param  array &$params The params passed to hook_civicrm_alterMailParams.
-   * @param  boolean $setReturnPath Whether to set the Return-Path. If FALSE, only X-CiviMail-Bounce will be set. Mainly for testing purposes.
+   * @param  bool $setReturnPath Whether to set the Return-Path. If FALSE, only X-CiviMail-Bounce will be set. Mainly for testing purposes.
    * @return void
    */
   public function verpify(&$params, $setReturnPath = TRUE) {
@@ -340,7 +338,7 @@ class CRM_Mailing_Transactional {
       preg_match_all('/href=[\'|"].*?[\'|"]/', $params['html'], $matches);
       $urls = $matches[0];
       $new = array();
-      foreach($urls as $url) {
+      foreach ($urls as $url) {
         $parts = parse_url(substr($url, 6, -1));
         // don't track things like mailto: and tel:
         if (strpos($parts['scheme'], 'http') === 0) {
@@ -357,4 +355,5 @@ class CRM_Mailing_Transactional {
       $params['html'] = str_replace($urls, $new, $params['html']);
     }
   }
+
 }
