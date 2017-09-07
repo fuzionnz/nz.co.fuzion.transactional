@@ -79,8 +79,11 @@ class CRM_Mailing_Transactional {
    * @param array $params Mail parameters
    */
   public function delivered($params) {
-    $parts = explode(CRM_Core_Config::singleton()->verpSeparator, $params['returnPath']);
+    if (!isset($params['returnPath'])) {
+      return;
+    }
 
+    $parts = explode(CRM_Core_Config::singleton()->verpSeparator, $params['returnPath']);
     $delivered = new CRM_Mailing_Event_BAO_Delivered();
     $delivered->event_queue_id = $parts[2];
     $delivered->time_stamp = date('YmdHis');
