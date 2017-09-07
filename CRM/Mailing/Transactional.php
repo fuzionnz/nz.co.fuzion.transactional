@@ -325,7 +325,7 @@ class CRM_Mailing_Transactional {
 
       if (!empty($params['receipt_activity_id']) && $event_queue_id) {
         $insertSQL = "INSERT INTO
-          civicrm_receipient_receipt (queue_id, receipt_activity_id)
+          civicrm_recipient_receipt (queue_id, receipt_activity_id)
           VALUES ({$event_queue_id}, {$params['receipt_activity_id']})";
         CRM_Core_DAO::executeQuery($insertSQL);
       }

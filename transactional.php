@@ -58,7 +58,7 @@ function transactional_civicrm_searchColumns($objectName, &$headers, &$rows, &$s
       if (!$queueId) {
         continue;
       }
-      $activityId = CRM_Core_DAO::singleValueQuery("SELECT receipt_activity_id FROM civicrm_receipient_receipt WHERE queue_id = {$queueId}");
+      $activityId = CRM_Core_DAO::singleValueQuery("SELECT receipt_activity_id FROM civicrm_recipient_receipt WHERE queue_id = {$queueId}");
       $activityURL = CRM_Utils_System::url('civicrm/activity', "atype={$activity['value']}&action=view&reset=1&id=$activityId");
       $rows[$queueId]['activity'] = "<a href='$activityURL' title='Go to Receipt Activity'>Receipt Activity</a>";
     }
@@ -102,7 +102,7 @@ function transactional_civicrm_xmlMenu(&$files) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
 function transactional_civicrm_install() {
-  CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_receipient_receipt` (
+  CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_recipient_receipt` (
     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT \'Unique ID\',
     `queue_id` int(10)    COMMENT \'Event Queue id\',
     `receipt_activity_id` int(10)    COMMENT \'Activity id of the receipt.\',
@@ -142,7 +142,7 @@ function transactional_civicrm_uninstall() {
   civicrm_api3('OptionValue', 'delete', array(
     'id' => $activity['id'],
   ));
-  CRM_Core_DAO::executeQuery("DROP TABLE civicrm_receipient_receipt");
+  CRM_Core_DAO::executeQuery("DROP TABLE civicrm_recipient_receipt");
   _transactional_civix_civicrm_uninstall();
 }
 
