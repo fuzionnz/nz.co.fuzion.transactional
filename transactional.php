@@ -73,7 +73,11 @@ function transactional_civicrm_searchColumns($objectName, &$headers, &$rows, &$s
  * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
  */
 function transactional_civicrm_buildForm($formName, &$form) {
-  CRM_Mailing_Transactional::singleton()->setFormContact($form->getContactID());
+  $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $form);
+  if (empty($contactId)) {
+    $contactId = !empty($form->_contactID) ? $form->_contactID : $form->getLoggedInUserContactID();
+  }
+  CRM_Mailing_Transactional::singleton()->setFormContact($contactId);
 }
 
 /**
