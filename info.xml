@@ -5,8 +5,8 @@
   <description>Track delivery, open, click, and bounce for transactional email.</description>
   <license>AGPL-3.0</license>
   <maintainer>
-    <author>David Reedy Jr</author>
-    <email>davidrjr.konadave@gmail.com</email>
+    <author>Fuzion</author>
+    <email>info@fuzion.co.nz</email>
   </maintainer>
   <urls>
     <url desc="Main Extension Page">https://github.com/fuzionnz/nz.co.fuzion.transactional</url>
