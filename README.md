@@ -1,12 +1,12 @@
-# Transactional Bounce Handler
+# Transactional Mail - Bounce and Tracking Handler
 
-This extension adds bounce handling to CiviCRM's transactional emails.
+This extension adds bounce handling to CiviCRM's transactional emails and creates Activities for mail such as Receipts and Invoices, which by default are not tracked in CiviCRM.
 
 CiviCRM by default only performs bounce handling when sending via CiviMail, but not when sending transactional emails such as scheduled reminders, event registrations, contribution receipts and the like. This extension addresses that limitation.
 
 ## Author
 
-This extension was written by Dave Reedy on behalf of [Fuzion](https://www.fuzion.co.nz).
+This extension was initially written by Dave Reedy on behalf of [Fuzion](https://www.fuzion.co.nz) and substantially extended by Jitendra Purohit.
 
 ## Configuration
 
@@ -20,6 +20,8 @@ VERP processing can be applied to outgoing transactional emails, and CiviMail's 
 
 Bounce reporting, delivery, open and click tracking should work as per regular CiviMails.
 
+Standard Activities are created for Receipts and Invoices
+
 ### Notes:
 
 * CiviMail doesn't do click tracking for URLs that contain tokens. By time the extension gets the message token replacement has already occurred. It decides to track or not track a URL based on the presence of certain query vars in the URL. There is class variable to specify which query vars to not track, defaulting to cid and cs.
@@ -29,7 +31,7 @@ Bounce reporting, delivery, open and click tracking should work as per regular C
 
 ## Sponsorship
 
-The development of this extension was financially sponsored by [Agileware](https://agileware.com.au) to give back to the CiviCRM community and support Agileware's CiviCRM customers. Contact Agileware for CiviCRM support and development services in Australia.
+Alongside funding from Fuzion and its clients, the development of this extension received financial support from [Agileware](https://agileware.com.au) to give back to the CiviCRM community and support Agileware's CiviCRM customers. Contact Agileware for CiviCRM support and development services in Australia.
 
 ## Support
 
