@@ -64,7 +64,7 @@ class CRM_Mailing_Transactional {
   /**
    * Get the singleton.
    *
-   * @return CRM_Bounce_Helper
+   * @return CRM_Mailing_Transactional
    */
   public static function singleton() {
     if (!self::$_singleton) {
@@ -219,8 +219,8 @@ class CRM_Mailing_Transactional {
       if ($mailing['mailing_id'] == $mailing_id) {
         return TRUE;
       }
-      return FALSE;
     }
+    return FALSE;
   }
 
   /**
