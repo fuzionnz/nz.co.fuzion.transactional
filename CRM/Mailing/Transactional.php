@@ -328,6 +328,12 @@ class CRM_Mailing_Transactional {
         CRM_Core_DAO::executeQuery($insertSQL);
       }
 
+      if (!empty($params['entity_id']) && !empty($params['groupName']) && !empty($event_queue_id)) {
+        CRM_Core_DAO::executeQuery("INSERT INTO civicrm_transactional_mapping
+          (entity_id, option_group_name, mailing_event_queue_id) VALUES
+          ({$params['entity_id']}, '{$params['groupName']}', {$event_queue_id})");
+      }
+
       // open tracking
       $params['html'] = CRM_Utils_Array::value('html', $params, '');
       $params['html'] .= "\n" . '<img src="' . $config->userFrameworkResourceURL .
@@ -341,7 +347,7 @@ class CRM_Mailing_Transactional {
       foreach ($urls as $url) {
         $parts = parse_url(substr($url, 6, -1));
         // don't track things like mailto: and tel:
-        if (strpos($parts['scheme'], 'http') === 0) {
+        if (isset($parts['scheme']) && strpos($parts['scheme'], 'http') === 0) {
           // CiviMail doesn't track URLs that include tokens
           // by time we get the message token replacement has already happend
           // so we decide based on the presence of certain query vars, e.g. contact id or checksum
