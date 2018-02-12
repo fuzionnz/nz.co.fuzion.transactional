@@ -3,6 +3,76 @@
 // AUTO-GENERATED FILE -- Civix may overwrite any changes made to this file
 
 /**
+ * The ExtensionUtil class provides small stubs for accessing resources of this
+ * extension.
+ */
+class CRM_Transactional_ExtensionUtil {
+  const SHORT_NAME = "transactional";
+  const LONG_NAME = "nz.co.fuzion.transactional";
+  const CLASS_PREFIX = "CRM_Transactional";
+
+  /**
+   * Translate a string using the extension's domain.
+   *
+   * If the extension doesn't have a specific translation
+   * for the string, fallback to the default translations.
+   *
+   * @param string $text
+   *   Canonical message text (generally en_US).
+   * @param array $params
+   * @return string
+   *   Translated text.
+   * @see ts
+   */
+  public static function ts($text, $params = array()) {
+    if (!array_key_exists('domain', $params)) {
+      $params['domain'] = array(self::LONG_NAME, NULL);
+    }
+    return ts($text, $params);
+  }
+
+  /**
+   * Get the URL of a resource file (in this extension).
+   *
+   * @param string|NULL $file
+   *   Ex: 'css/foo.css'.
+   * @return string
+   *   Ex: 'http://example.org/sites/default/ext/org.example.foo/css/foo.css'.
+   */
+  public static function url($file = NULL) {
+    return CRM_Core_Resources::singleton()->getUrl(self::LONG_NAME, $file);
+  }
+
+  /**
+   * Get the path of a resource file (in this extension).
+   *
+   * @param string|NULL $file
+   *   Ex: 'css/foo.css'.
+   * @return string
+   *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo/css/foo.css'.
+   */
+  public static function path($file = NULL) {
+    // return CRM_Core_Resources::singleton()->getPath(self::LONG_NAME, $file);
+    return __DIR__ . ($path === NULL ? '' : (DIRECTORY_SEPARATOR . $file));
+  }
+
+  /**
+   * Get the name of a class within this extension.
+   *
+   * @param string $suffix
+   *   Ex: 'Page_HelloWorld' or 'Page\\HelloWorld'.
+   * @return string
+   *   Ex: 'CRM_Foo_Page_HelloWorld'.
+   */
+  public static function findClass($suffix) {
+    return self::CLASS_PREFIX . '_' . str_replace('\\', '_', $suffix);
+  }
+
+}
+
+use CRM_Transactional_ExtensionUtil as E;
+
+/**
  * (Delegated) Implements hook_civicrm_config().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
@@ -190,7 +260,7 @@ function _transactional_civix_civicrm_managed(&$entities) {
     $es = include $file;
     foreach ($es as $e) {
       if (empty($e['module'])) {
-        $e['module'] = 'nz.co.fuzion.transactional';
+        $e['module'] = E::LONG_NAME;
       }
       $entities[] = $e;
       if (empty($e['params']['version'])) {
@@ -222,7 +292,7 @@ function _transactional_civix_civicrm_caseTypes(&$caseTypes) {
       // throw new CRM_Core_Exception($errorMessage);
     }
     $caseTypes[$name] = array(
-      'module' => 'nz.co.fuzion.transactional',
+      'module' => E::LONG_NAME,
       'name' => $name,
       'file' => $file,
     );
@@ -248,7 +318,7 @@ function _transactional_civix_civicrm_angularModules(&$angularModules) {
     $name = preg_replace(':\.ang\.php$:', '', basename($file));
     $module = include $file;
     if (empty($module['ext'])) {
-      $module['ext'] = 'nz.co.fuzion.transactional';
+      $module['ext'] = E::LONG_NAME;
     }
     $angularModules[$name] = $module;
   }
