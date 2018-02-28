@@ -16,7 +16,7 @@ No special configuration is required for this extension. Just install it!
 
 This extension creates a pseudo-CiviMail named "Transactional Emails" which transactional emails are attached to. This could be improved to track by email type with multiple pseudo-CiviMails.
 
-VERP processing can be applied to outgoing transactional emails, and CiviMail's existing bounce handling may  be applied to bounces returned from those emails.
+VERP processing is applied to all outgoing transactional (non Civimail) emails, and CiviMail's existing bounce handling may be applied to bounces returned from those emails.
 
 Bounce reporting, delivery, open and click tracking should work as per regular CiviMails.
 
