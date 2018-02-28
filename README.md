@@ -37,7 +37,7 @@ Alongside funding from Fuzion and its clients, the development of this extension
 
 This extension is contributed by [Fuzion](https://www.fuzion.co.nz). 
 
-We welcome contributions and bug reports via the the [nz.co.fuzion.transactional issue queue](https://github.com/fuzionnz/nz.co.fuzion.transactional.issues).
+We welcome contributions and bug reports via the the [nz.co.fuzion.transactional issue queue](https://github.com/fuzionnz/nz.co.fuzion.transactional/issues).
 
 Community support is available via CiviCRM community channels:
 
