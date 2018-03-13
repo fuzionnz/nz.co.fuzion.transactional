@@ -327,11 +327,11 @@ class CRM_Mailing_Transactional {
           VALUES ({$event_queue_id}, {$params['receipt_activity_id']})";
         CRM_Core_DAO::executeQuery($insertSQL);
       }
-
-      if (!empty($params['entity_id']) && !empty($params['groupName']) && !empty($event_queue_id)) {
+      $entityId = self::getEntityId($params);
+      if (!empty($entityId) && !empty($params['groupName']) && !empty($event_queue_id)) {
         CRM_Core_DAO::executeQuery("INSERT INTO civicrm_transactional_mapping
           (entity_id, option_group_name, mailing_event_queue_id) VALUES
-          ({$params['entity_id']}, '{$params['groupName']}', {$event_queue_id})");
+          ({$entityId}, '{$params['groupName']}', {$event_queue_id})");
       }
 
       // open tracking
@@ -360,6 +360,25 @@ class CRM_Mailing_Transactional {
       }
       $params['html'] = str_replace($urls, $new, $params['html']);
     }
+  }
+
+  /**
+   * @param array $params
+   *
+   * @return integer
+   */
+  public static function getEntityId($params) {
+    if ($params['groupName'] == 'msg_tpl_workflow_case'
+      && !empty($params['tplParams']['contact']) && !empty($params['tplParams']['contact']['activity_id'])) {
+      return $params['tplParams']['contact']['activity_id'];
+    }
+    elseif ($params['groupName'] == 'Activity Email Sender') {
+      $dao = CRM_Core_DAO::executeQuery("SELECT MAX(id) as activity_id FROM civicrm_activity");
+      if ($dao->fetch()) {
+        return $dao->activity_id;
+      }
+    }
+    return CRM_Utils_Array::value('entity_id', $params);
   }
 
 }

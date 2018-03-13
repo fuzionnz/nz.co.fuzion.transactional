@@ -27,6 +27,7 @@ function transactional_civicrm_alterReportVar($varType, &$var, &$object) {
       $var->_columnHeaders['mailing_queue_id'] = array(
         'type' => 1,
         'title' => 'Mailing Queue id',
+        'no_display' => TRUE,
       );
       $var->_select .= ", civicrm_mailing_event_queue.id as mailing_queue_id";
     }
@@ -37,18 +38,17 @@ function transactional_civicrm_alterReportVar($varType, &$var, &$object) {
           $mailName = explode("Transactional Email", $value['civicrm_mailing_mailing_name']);
           $transactionalType = trim($mailName[1], "( )");
 
-          //If transactional mail is a schedule reminder.
-          if ($transactionalType == 'Scheduled Reminder Sender') {
+          if (in_array($transactionalType, array('Scheduled Reminder Sender', 'msg_tpl_workflow_case', 'Activity Email Sender'))) {
             $dao = CRM_Core_DAO::executeQuery("
               SELECT entity_id
               FROM civicrm_transactional_mapping
               WHERE mailing_event_queue_id = {$value['mailing_queue_id']} AND option_group_name = '{$transactionalType}'"
             );
             if ($dao->fetch()) {
-              $var[$key]['civicrm_mailing_mailing_subject'] = CRM_Core_DAO::singleValueQuery("SELECT subject FROM civicrm_action_schedule WHERE id = {$dao->entity_id}");
+              $tableName = ($transactionalType == 'Scheduled Reminder Sender') ? 'civicrm_action_schedule' : 'civicrm_activity';
+              $var[$key]['civicrm_mailing_mailing_subject'] = CRM_Core_DAO::singleValueQuery("SELECT subject FROM {$tableName} WHERE id = {$dao->entity_id}");
             }
           }
-
         }
       }
     }
