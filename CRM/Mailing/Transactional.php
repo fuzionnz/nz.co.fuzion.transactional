@@ -327,6 +327,12 @@ class CRM_Mailing_Transactional {
           VALUES ({$event_queue_id}, {$params['receipt_activity_id']})";
         CRM_Core_DAO::executeQuery($insertSQL);
       }
+      $entityId = self::getEntityId($params);
+      if (!empty($entityId) && !empty($params['groupName']) && !empty($event_queue_id)) {
+        CRM_Core_DAO::executeQuery("INSERT INTO civicrm_transactional_mapping
+          (entity_id, option_group_name, mailing_event_queue_id) VALUES
+          ({$entityId}, '{$params['groupName']}', {$event_queue_id})");
+      }
 
       // open tracking
       $params['html'] = CRM_Utils_Array::value('html', $params, '');
@@ -341,7 +347,7 @@ class CRM_Mailing_Transactional {
       foreach ($urls as $url) {
         $parts = parse_url(substr($url, 6, -1));
         // don't track things like mailto: and tel:
-        if (strpos($parts['scheme'], 'http') === 0) {
+        if (isset($parts['scheme']) && strpos($parts['scheme'], 'http') === 0) {
           // CiviMail doesn't track URLs that include tokens
           // by time we get the message token replacement has already happend
           // so we decide based on the presence of certain query vars, e.g. contact id or checksum
@@ -354,6 +360,25 @@ class CRM_Mailing_Transactional {
       }
       $params['html'] = str_replace($urls, $new, $params['html']);
     }
+  }
+
+  /**
+   * @param array $params
+   *
+   * @return integer
+   */
+  public static function getEntityId($params) {
+    if ($params['groupName'] == 'msg_tpl_workflow_case'
+      && !empty($params['tplParams']['contact']) && !empty($params['tplParams']['contact']['activity_id'])) {
+      return $params['tplParams']['contact']['activity_id'];
+    }
+    elseif ($params['groupName'] == 'Activity Email Sender') {
+      $dao = CRM_Core_DAO::executeQuery("SELECT MAX(id) as activity_id FROM civicrm_activity");
+      if ($dao->fetch()) {
+        return $dao->activity_id;
+      }
+    }
+    return CRM_Utils_Array::value('entity_id', $params);
   }
 
 }

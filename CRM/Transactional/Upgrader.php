@@ -162,4 +162,17 @@ class CRM_Transactional_Upgrader extends CRM_Transactional_Upgrader_Base {
     return TRUE;
   }
 
+  public function upgrade_4702() {
+    $this->ctx->log->info('Applying update 4702');
+     CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_transactional_mapping` (
+      `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `entity_id` int(11) DEFAULT NULL,
+      `option_group_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+      `mailing_event_queue_id` int(11) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+      ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+    ');
+    return TRUE;
+  }
+
 }

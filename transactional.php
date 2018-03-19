@@ -17,6 +17,45 @@ function transactional_civicrm_alterMailParams(&$params, $context) {
 }
 
 /**
+ * Implements hook_civicrm_alterReportVar().
+ *
+ * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterReportVar
+ */
+function transactional_civicrm_alterReportVar($varType, &$var, &$object) {
+  if (is_a($object, 'CRM_Report_Form_Mailing_Detail')) {
+    if ($varType == 'sql') {
+      $var->_columnHeaders['mailing_queue_id'] = array(
+        'type' => 1,
+        'title' => 'Mailing Queue id',
+        'no_display' => TRUE,
+      );
+      $var->_select .= ", civicrm_mailing_event_queue.id as mailing_queue_id";
+    }
+    if ($varType == 'rows') {
+      foreach ($var as $key => $value) {
+        $tableName = '';
+        if (empty($value['civicrm_mailing_mailing_subject']) && CRM_Utils_String::startsWith($value['civicrm_mailing_mailing_name'], 'Transactional Email')) {
+          $mailName = explode("Transactional Email", $value['civicrm_mailing_mailing_name']);
+          $transactionalType = trim($mailName[1], "( )");
+
+          if (in_array($transactionalType, array('Scheduled Reminder Sender', 'msg_tpl_workflow_case', 'Activity Email Sender'))) {
+            $dao = CRM_Core_DAO::executeQuery("
+              SELECT entity_id
+              FROM civicrm_transactional_mapping
+              WHERE mailing_event_queue_id = {$value['mailing_queue_id']} AND option_group_name = '{$transactionalType}'"
+            );
+            if ($dao->fetch()) {
+              $tableName = ($transactionalType == 'Scheduled Reminder Sender') ? 'civicrm_action_schedule' : 'civicrm_activity';
+              $var[$key]['civicrm_mailing_mailing_subject'] = CRM_Core_DAO::singleValueQuery("SELECT subject FROM {$tableName} WHERE id = {$dao->entity_id}");
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_civicrm_postEmailSend().
  *
  * Mark mail as delivered.
@@ -110,6 +149,14 @@ function transactional_civicrm_install() {
     `receipt_activity_id` int(10)    COMMENT \'Activity id of the receipt.\',
       PRIMARY KEY ( `id` )
     )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+  ');
+  CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_transactional_mapping` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+    `entity_id` int(11) DEFAULT NULL,
+    `option_group_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `mailing_event_queue_id` int(11) DEFAULT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
   ');
 
   civicrm_api3('OptionValue', 'create', array(
