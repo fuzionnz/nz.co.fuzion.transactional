@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <extension key="nz.co.fuzion.transactional" type="module">
   <file>transactional</file>
-  <name>Transactional Email</name>
-  <description>Track delivery, open, click, and bounce for transactional email.</description>
+  <name>Transactional Mail - Bounce and Tracking Handler</name>
+  <description>Track delivery, open, click, and bounce for transactional email (Receipts, Scheduled Reminders, etc).</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>David Reedy Jr</author>
