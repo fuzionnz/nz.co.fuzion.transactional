@@ -4,14 +4,23 @@ class CRM_Mailing_Report {
 
   /**
    * Add entity_id to report columns.
+   *
+   * @param object $form
    */
-  public static function addEntityIdToDetailReport($form) {
-    $columns = $form->getVar('_columns');
+  public static function addEntityIdToDetailReport(&$columns, $form) {
     $newCol = array(
       'fields' => array(
         'entity_id' => array(
           'name' => 'entity_id',
           'title' => 'Entity ID',
+          'dbAlias' => 'civicrm_transactional_mapping.entity_id',
+        )
+      ),
+      'filters' => array(
+        'entity_id' => array(
+          'name' => 'entity_id',
+          'title' => 'Entity ID',
+          'type' => CRM_Utils_Type::T_STRING,
           'dbAlias' => 'civicrm_transactional_mapping.entity_id',
         )
       ),
@@ -24,7 +33,6 @@ class CRM_Mailing_Report {
       )
     );
     $columns = self::insertKeyValuePair($columns, 'civicrm_transactional_mapping', $newCol, 2);
-    $form->setVar('_columns', $columns);
 
     $filters = $form->getVar('_filters');
     $newFilter = array(
@@ -40,8 +48,10 @@ class CRM_Mailing_Report {
 
   /**
    * Add/Update column in the report.
+   *
+   * @param object $var
    */
-  public static function alterReportDisplay($var) {
+  public static function alterReportDisplay(&$var) {
     foreach ($var as $key => $value) {
       $tableName = '';
       if (empty($value['civicrm_mailing_mailing_subject']) && CRM_Utils_String::startsWith($value['civicrm_mailing_mailing_name'], 'Transactional Email')) {
@@ -55,7 +65,13 @@ class CRM_Mailing_Report {
             WHERE mailing_event_queue_id = {$value['mailing_queue_id']} AND option_group_name = '{$transactionalType}'"
           );
           if ($dao->fetch()) {
-            $tableName = ($transactionalType == 'Scheduled Reminder Sender') ? 'civicrm_action_schedule' : 'civicrm_activity';
+            $tableName = 'civicrm_activity';
+            if ($transactionalType == 'Scheduled Reminder Sender') {
+              $tableName = 'civicrm_action_schedule';
+              if (!empty($var[$key]['civicrm_transactional_mapping_entity_id'])) {
+                $var[$key]['civicrm_transactional_mapping_entity_id'] .= " (" . CRM_Core_DAO::singleValueQuery("SELECT title FROM {$tableName} WHERE id = {$dao->entity_id}") . ")";
+              }
+            }
             $var[$key]['civicrm_mailing_mailing_subject'] = CRM_Core_DAO::singleValueQuery("SELECT subject FROM {$tableName} WHERE id = {$dao->entity_id}");
           }
         }
@@ -65,22 +81,35 @@ class CRM_Mailing_Report {
 
   /**
    * Alter Report query.
+   *
+   * @param object $var
    */
-  public static function modifyQueryParameters($var) {
+  public static function modifyQueryParameters(&$var) {
     $params = $var->getVar('_params');
     $orderBys = array_column($params['order_bys'], 'column');
 
     if (!empty($params['fields']['entity_id']) || !empty($params['entity_id_value']) || in_array('entity_id', $orderBys)) {
+      if (strpos($var->_select, 'civicrm_transactional_mapping.entity_id') == false) {
+        $var->_select .= ", civicrm_transactional_mapping.entity_id as civicrm_transactional_mapping_entity_id";
+        $var->_selectClauses[] = "civicrm_transactional_mapping.entity_id as civicrm_transactional_mapping_entity_id";
+
+        $selectAliases = $var->getVar('_selectAliases');
+        $selectAliases[] = "civicrm_transactional_mapping_entity_id";
+        $var->setVar('_selectAliases', $selectAliases);
+
+        $selectTables = $var->getVar('_selectedTables');
+        $selectTables[] = "civicrm_transactional_mapping";
+        $var->setVar('_selectedTables', $selectTables);
+      }
       $from = $var->getVar('_from');
       $from .= "
         LEFT JOIN civicrm_transactional_mapping ON civicrm_mailing_event_queue.id = civicrm_transactional_mapping.mailing_event_queue_id";
       $var->setVar('_from', $from);
     }
-    if (!empty($params['entity_id_op']) && !empty($params['entity_id_value'])) {
-      $where = $var->getVar('_where');
-      $where .= "
-        AND civicrm_transactional_mapping.entity_id = {$params['entity_id_value']}";
-      $var->setVar('_where', $where);
+    if (!empty($var->_columnHeaders) && empty($var->_columnHeaders['civicrm_transactional_mapping_entity_id']) && !empty($params['fields']['entity_id'])) {
+      $var->_columnHeaders['civicrm_transactional_mapping_entity_id'] = array(
+        'title' => "Entity ID",
+      );
     }
 
     $var->_columnHeaders['mailing_queue_id'] = array(
@@ -93,6 +122,11 @@ class CRM_Mailing_Report {
 
   /**
    * Add new key to the columns array.
+   *
+   * @param array $arr
+   * @param string $key
+   * @param array $val
+   * @param integer $index
    */
   public static function insertKeyValuePair($arr, $key, $val, $index){
     $arrayEnd = array_splice($arr, $index);

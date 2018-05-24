@@ -29,6 +29,9 @@ function transactional_civicrm_alterReportVar($varType, &$var, &$object) {
     if ($varType == 'rows') {
       CRM_Mailing_Report::alterReportDisplay($var);
     }
+    if ($varType == 'columns') {
+      CRM_Mailing_Report::addEntityIdToDetailReport($var, $object);
+    }
   }
 }
 
@@ -80,18 +83,6 @@ function transactional_civicrm_searchColumns($objectName, &$headers, &$rows, &$s
     }
   }
 }
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- */
-function transactional_civicrm_preProcess($formName, &$form) {
-  if ($formName == 'CRM_Report_Form_Mailing_Detail') {
-    CRM_Mailing_Report::addEntityIdToDetailReport($form);
-  }
-}
-
 
 /**
  * Implements hook_civicrm_buildForm().
