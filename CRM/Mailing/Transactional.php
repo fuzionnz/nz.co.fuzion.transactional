@@ -353,7 +353,8 @@ class CRM_Mailing_Transactional {
       // first we find all href attributes in the HTML
       preg_match_all('/href=[\'|"].*?[\'|"]/', $params['html'], $matches);
       $urls = $matches[0];
-      $new = array();
+      $vars = $new = array();
+
       foreach ($urls as $url) {
         $parts = parse_url(substr($url, 6, -1));
         // don't track things like mailto: and tel:
@@ -361,7 +362,9 @@ class CRM_Mailing_Transactional {
           // CiviMail doesn't track URLs that include tokens
           // by time we get the message token replacement has already happend
           // so we decide based on the presence of certain query vars, e.g. contact id or checksum
-          parse_str(html_entity_decode($parts['query']), $vars);
+          if (isset($parts['query'])) {
+            parse_str(html_entity_decode($parts['query']), $vars);
+          }
           if (!array_intersect($this->dont_track_query_vars, array_keys($vars))) {
             $url = CRM_Mailing_BAO_TrackableURL::getTrackerURL($url, $mailing_id, $event_queue_id);
           }
