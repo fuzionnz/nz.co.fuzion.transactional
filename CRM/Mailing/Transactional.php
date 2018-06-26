@@ -170,6 +170,16 @@ class CRM_Mailing_Transactional {
    * @return array An array containing the mailing ID and the job ID for the requested mailing.
    */
   public function getMailingIds($name) {
+    if (!empty($this->mailings[$name])) {
+      try {
+        //Check if mailing id and job id are valid.
+        civicrm_api3('Mailing', 'getsingle', array('id' => $this->mailings[$name]['mailing_id']));
+        civicrm_api3('MailingJob', 'getsingle', array('id' => $this->mailings[$name]['job_id']));
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        unset($this->mailings[$name]);
+      }
+    }
     if (empty($this->mailings[$name])) {
       $api = civicrm_api3('Mailing', 'create', array(
         'sequential' => 1,
