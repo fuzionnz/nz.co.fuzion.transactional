@@ -18,7 +18,7 @@
   <version>1.0.1</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>4.7</ver>
+    <ver>5.3</ver>
   </compatibility>
   <civix>
     <namespace>CRM/Transactional</namespace>
