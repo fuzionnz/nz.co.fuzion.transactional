@@ -39,30 +39,60 @@ class CRM_Transactional_MailingTest extends \PHPUnit_Framework_TestCase implemen
     parent::tearDown();
   }
 
+
+  /**
+   * Helper function to reuse contact creation code.
+   *
+   * @param $suffix optional suffix to append to names, and email.
+   * @throw Exception if fails to create a contact.
+   * @return result of api call, with email included.
+   */
+  public function generateTestContact($suffix = '') {
+    $contactParams = array(
+      'first_name' => 'first' . $suffix . substr(sha1(rand()), 0, 7),
+      'last_name' => 'last' . $suffix . substr(sha1(rand()), 0, 7),
+      'email' => substr(sha1(rand()), 0, 7) . $suffix . '@example.org',
+      'contact_type' => 'Individual',
+    );
+    $contact = civicrm_api3('Contact', 'create', $contactParams);
+
+    if ($contact['is_error'] == 1) {
+      throw new Exception('Call to api3 Contact create returned an error');
+    }
+    $contact['email'] = $contactParams['email'];
+    return $contact;
+  }
+
+  /**
+   * Helper function to seperate out getting financial types required
+   * for testing receipts.
+   * @throw Exeception if fails to get any financial types.
+   * @return result of api call.
+   */
+  private function getFinancialTypes() {
+    $results = civicrm_api3('FinancialType', 'get', [
+      'sequential' => 1,
+    ]);
+    if ($results['count'] == 0) {
+      throw new Exception('Failed to get any financial types');
+    }
+    $financial_types = array();
+    foreach ($results['values'] as $row) {
+      $financial_types[] = $row['name'];
+    }
+    return $financial_types;
+  }
+
   /**
    * Test transactional mailing is created
    * when a normal email activity is sent.
    */
   public function testSingleEmailActivity() {
-    $contactParams = array(
-      'first_name' => 'first' . substr(sha1(rand()), 0, 7),
-      'last_name' => 'last' . substr(sha1(rand()), 0, 7),
-      'email' => substr(sha1(rand()), 0, 7) . '@example.org',
-      'contact_type' => 'Individual',
-    );
-    $contact = civicrm_api3('Contact', 'create', $contactParams);
-
-    $contactParams2 = array(
-      'first_name' => 'first2' . substr(sha1(rand()), 0, 7),
-      'last_name' => 'last2' . substr(sha1(rand()), 0, 7),
-      'email' => substr(sha1(rand()), 0, 7) . '2@example.org',
-      'contact_type' => 'Individual',
-    );
-    $contact2 = civicrm_api3('Contact', 'create', $contactParams2);
-
+    $contact = $this->generateTestContact();
+    $contact2 = $this->generateTestContact('2');
     $params = array(
       'from' => 'from@example.com',
-      'toEmail' => $contactParams['email'],
+      'toEmail' => $contact['email'],
       'subject' => 'First Transactional extension unit test.',
       'text' => 'Testing first unit test for transactional extension',
       'html' => "<p>\n Testing first unit test for transactional extension. </p>",
@@ -73,13 +103,13 @@ class CRM_Transactional_MailingTest extends \PHPUnit_Framework_TestCase implemen
         'sort_name' => $contact['values'][$contact['id']]['sort_name'],
         'display_name' => $contact['values'][$contact['id']]['display_name'],
         'preferred_mail_format' => $contact['values'][$contact['id']]['preferred_mail_format'],
-        'email' => $contactParams['email'],
-      )
+        'email' => $contact['email'],
+      ),
     );
     $subject = "First Transactional extension unit test";
     $text = 'Testing first unit test for transactional extension';
     $html = "<p>\n Testing first unit test for transactional extension. </p>";
-    CRM_Activity_BAO_Activity::sendEmail($contactDetails, $subject, $text, $html, $contactParams['email'], $contact2['id']);
+    CRM_Activity_BAO_Activity::sendEmail($contactDetails, $subject, $text, $html, $contact['email'], $contact2['id']);
 
     $mailing = civicrm_api3('Mailing', 'get', [
       'sequential' => 1,
@@ -144,6 +174,67 @@ class CRM_Transactional_MailingTest extends \PHPUnit_Framework_TestCase implemen
       $this->assertEquals('Scheduled Reminder Sender', $dao->option_group_name);
       $this->assertEquals($actionSched['id'], $dao->entity_id);
     }
+  }
+
+  /**
+   * Test transactional mailing is created when contribution receipt
+   * is sent.
+   */
+  public function testContributionReceipts() {
+
+    // Set up data required for test - we are going to test each
+    // financial type as per
+    // https://github.com/fuzionnz/nz.co.fuzion.transactional/issues/20
+    $params = [
+      'financial_type_id' => NULL,
+      'total_amount' => 1,
+      'contact_id' => NULL,
+      'contribution_status_id' => "Pending",
+    ];
+    $financial_types = $this->getFinancialTypes();
+
+    // Record the datetime - so we can confirm that the mailing
+    // modified time was updated.
+    $modified_date = date('Y/m/d H:i');
+
+    // Run test for each financial type.
+    foreach ($financial_types as $financial_type) {
+
+      $contact = $this->generateTestContact();
+      $params['contact_id'] = $contact['id'];
+      $params['financial_type_id'] = $financial_type;
+
+      // Todo chain the creation of the contribution and the sending
+      // of the receipt together in one api call.
+      $result = civicrm_api3('Contribution', 'create', $params);
+      $contribution_id = $result['id'];
+      $result = civicrm_api3('Contribution', 'completetransaction', [
+        'id' => $contribution_id,
+        'is_email_receipt' => 1,
+      ]);
+      // Test that Reciept Activity Exists
+      $activity = civicrm_api3('Activity', 'get', [
+        'sequential' => 1,
+        'contact_id' => $contact['id'],
+        'activity_type_id' => "ReceiptActivity",
+      ]);
+      $this->assertEquals(1, $activity['count'], "No receipt activity for contact with financial type $financial_type");
+    }
+
+    // Test mailing has been created
+    $mailing = civicrm_api3('Mailing', 'get', [
+      'sequential' => 1,
+      'name' => ['=' => "Transactional Email (msg_tpl_workflow_contribution)"],
+    ]);
+    $this->assertEquals(1, $mailing['count'], "expected 1 mailing with name: Transactional Email (msg_tpl_workflow_contribution) found: {$mailing['count']}");
+
+    // Test the mailing was updated recently
+    $result = civicrm_api3('Mailing', 'get', [
+      'sequential' => 1,
+      'name' => ['=' => "Transactional Email (msg_tpl_workflow_contribution)"],
+      'modified_date' => ['>=' => $modified_date],
+    ]);
+    $this->assertEquals(1, $mailing['count'], "expected 1 mailing updated since $modified_date with name: Transactional Email (msg_tpl_workflow_contribution) found: {$mailing['count']}");
   }
 
 }
