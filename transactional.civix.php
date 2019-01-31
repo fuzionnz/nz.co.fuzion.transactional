@@ -35,11 +35,16 @@ class CRM_Transactional_ExtensionUtil {
    * Get the URL of a resource file (in this extension).
    *
    * @param string|NULL $file
+   *   Ex: NULL.
    *   Ex: 'css/foo.css'.
    * @return string
+   *   Ex: 'http://example.org/sites/default/ext/org.example.foo'.
    *   Ex: 'http://example.org/sites/default/ext/org.example.foo/css/foo.css'.
    */
   public static function url($file = NULL) {
+    if ($file === NULL) {
+      return rtrim(CRM_Core_Resources::singleton()->getUrl(self::LONG_NAME), '/');
+    }
     return CRM_Core_Resources::singleton()->getUrl(self::LONG_NAME, $file);
   }
 
@@ -47,13 +52,15 @@ class CRM_Transactional_ExtensionUtil {
    * Get the path of a resource file (in this extension).
    *
    * @param string|NULL $file
+   *   Ex: NULL.
    *   Ex: 'css/foo.css'.
    * @return string
+   *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo'.
    *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo/css/foo.css'.
    */
   public static function path($file = NULL) {
     // return CRM_Core_Resources::singleton()->getPath(self::LONG_NAME, $file);
-    return __DIR__ . ($path === NULL ? '' : (DIRECTORY_SEPARATOR . $file));
+    return __DIR__ . ($file === NULL ? '' : (DIRECTORY_SEPARATOR . $file));
   }
 
   /**
@@ -345,8 +352,10 @@ function _transactional_civix_glob($pattern) {
  * Inserts a navigation menu item at a given place in the hierarchy.
  *
  * @param array $menu - menu hierarchy
- * @param string $path - path where insertion should happen (ie. Administer/System Settings)
- * @param array $item - menu you need to insert (parent/child attributes will be filled for you)
+ * @param string $path - path to parent of this item, e.g. 'my_extension/submenu'
+ *    'Mailing', or 'Administer/System Settings'
+ * @param array $item - the item to insert (parent/child attributes will be
+ *    filled for you)
  */
 function _transactional_civix_insert_navigation_menu(&$menu, $path, $item) {
   // If we are done going down the path, insert menu
@@ -435,4 +444,17 @@ function _transactional_civix_civicrm_alterSettingsFolders(&$metaDataFolders = N
   if (is_dir($settingsDir) && !in_array($settingsDir, $metaDataFolders)) {
     $metaDataFolders[] = $settingsDir;
   }
+}
+
+/**
+ * (Delegated) Implements hook_civicrm_entityTypes().
+ *
+ * Find any *.entityType.php files, merge their content, and return.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_entityTypes
+ */
+
+function _transactional_civix_civicrm_entityTypes(&$entityTypes) {
+  $entityTypes = array_merge($entityTypes, array (
+  ));
 }
