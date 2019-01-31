@@ -78,8 +78,10 @@ function transactional_civicrm_searchColumns($objectName, &$headers, &$rows, &$s
         continue;
       }
       $activityId = CRM_Core_DAO::singleValueQuery("SELECT receipt_activity_id FROM civicrm_recipient_receipt WHERE queue_id = {$queueId}");
-      $activityURL = CRM_Utils_System::url('civicrm/activity', "atype={$activity['value']}&action=view&reset=1&id=$activityId");
-      $rows[$queueId]['activity'] = "<a href='$activityURL' title='Go to Receipt Activity'>Receipt Activity</a>";
+      if ($activityId) {
+        $activityURL = CRM_Utils_System::url('civicrm/activity', "atype={$activity['value']}&action=view&reset=1&id=$activityId");
+        $rows[$queueId]['activity'] = "<a href='$activityURL' title='Go to Receipt Activity'>Receipt Activity</a>";
+      }
     }
   }
 }
