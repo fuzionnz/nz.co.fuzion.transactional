@@ -97,9 +97,8 @@ class CRM_Mailing_Transactional {
         'subject' => 'Receipt Sent - ' .  CRM_Utils_Array::value('subject', $params),
         'details' => CRM_Utils_Array::value('html', $params),
         'status_id' => 'Completed',
-        'target_contact_id' => CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Email', $params['toEmail'], 'contact_id', 'email'),
       );
-      $result = civicrm_api3('activity', 'create', $activityParams);
+      civicrm_api3('activity', 'create', $activityParams);
     }
   }
 
@@ -261,6 +260,12 @@ class CRM_Mailing_Transactional {
           'source_record_id' => CRM_Utils_Array::value('contributionId', $params),
           'status_id' => "Scheduled",
         );
+        if (!empty($params['tplParams']) && !empty($params['tplParams']['contactID'])) {
+          $activityParams['target_contact_id'] = $params['tplParams']['contactID'];
+        }
+        else {
+          $activityParams['target_contact_id'] = CRM_Utils_Array::value('contactId', $params);
+        }
 
         $id = CRM_Core_Session::getLoggedInContactID();
         if ($id) {
