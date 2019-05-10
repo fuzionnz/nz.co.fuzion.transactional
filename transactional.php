@@ -125,14 +125,14 @@ function transactional_civicrm_xmlMenu(&$files) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
 function transactional_civicrm_install() {
-  CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_recipient_receipt` (
+  CRM_Core_DAO::executeQuery('CREATE TABLE IF NOT EXISTS `civicrm_recipient_receipt` (
     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT \'Unique ID\',
     `queue_id` int(10)    COMMENT \'Event Queue id\',
     `receipt_activity_id` int(10)    COMMENT \'Activity id of the receipt.\',
       PRIMARY KEY ( `id` )
     )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
   ');
-  CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_transactional_mapping` (
+  CRM_Core_DAO::executeQuery('CREATE TABLE IF NOT EXISTS `civicrm_transactional_mapping` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
     `entity_id` int(11) DEFAULT NULL,
     `option_group_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -173,6 +173,7 @@ function transactional_civicrm_uninstall() {
   civicrm_api3('OptionValue', 'delete', array(
     'id' => $activity['id'],
   ));
+  CRM_Core_DAO::executeQuery("DROP TABLE civicrm_transactional_mapping");
   CRM_Core_DAO::executeQuery("DROP TABLE civicrm_recipient_receipt");
   _transactional_civix_civicrm_uninstall();
 }
