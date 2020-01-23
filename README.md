@@ -2,6 +2,8 @@
 
 This extension adds **bounce handling** and **click tracking**, and **creates activities** for CiviCRM's transactional emails (i.e event registrations, contribution receipts, invoices, scheduled reminders, and so on).
 
+Out of the box, CiviCRM only does the things mentioned above when sending via CiviMail. This extension adds that functionality to all mail sent from CiviCRM.
+
 ## Author
 
 This extension was initially written by Dave Reedy on behalf of [Fuzion](https://www.fuzion.co.nz) and substantially extended by Jitendra Purohit.
