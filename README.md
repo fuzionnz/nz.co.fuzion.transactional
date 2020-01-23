@@ -1,8 +1,6 @@
-# Transactional Mail - Bounce and Tracking Handler
+# Transactional Mail
 
-This extension adds bounce handling to CiviCRM's transactional emails and creates Activities for mail such as Receipts and Invoices, which by default are not tracked in CiviCRM.
-
-CiviCRM by default only performs bounce handling when sending via CiviMail, but not when sending transactional emails such as scheduled reminders, event registrations, contribution receipts and the like. This extension addresses that limitation.
+This extension adds **bounce handling** and **click tracking**, and **creates activities** for CiviCRM's transactional emails (i.e event registrations, contribution receipts, invoices, scheduled reminders, and so on).
 
 ## Author
 
