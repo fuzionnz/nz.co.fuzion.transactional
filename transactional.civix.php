@@ -456,5 +456,11 @@ function _transactional_civix_civicrm_alterSettingsFolders(&$metaDataFolders = N
 
 function _transactional_civix_civicrm_entityTypes(&$entityTypes) {
   $entityTypes = array_merge($entityTypes, array (
+    'CRM_Transactional_DAO_RecipientReceipt' => 
+    array (
+      'name' => 'RecipientReceipt',
+      'class' => 'CRM_Transactional_DAO_RecipientReceipt',
+      'table' => 'civicrm_recipient_receipt',
+    ),
   ));
 }

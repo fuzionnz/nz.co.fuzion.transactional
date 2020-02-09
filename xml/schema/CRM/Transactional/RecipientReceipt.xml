@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Transactional</base>
+  <class>RecipientReceipt</class>
+  <name>civicrm_recipient_receipt</name>
+  <comment>FIXME</comment>
+  <add>5.22</add>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique RecipientReceipt ID</comment>
+    <add>5.22</add>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>queue_id</name>
+    <type>int unsigned</type>
+    <comment>Event Queue id</comment>
+    <add>5.22</add>
+  </field>
+  <field>
+    <name>receipt_activity_id</name>
+    <type>int unsigned</type>
+    <comment>Activity id of the receipt</comment>
+    <add>5.22</add>
+  </field>
+
+</table>

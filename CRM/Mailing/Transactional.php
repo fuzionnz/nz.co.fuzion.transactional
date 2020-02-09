@@ -76,7 +76,8 @@ class CRM_Mailing_Transactional {
   /**
    * This should be called from hook_civicrm_postEmailSend() to mark the message as delivered.
    *
-   * @param array $params Mail parameters
+   * @param array $params
+   *  Mail parameters
    */
   public function delivered($params) {
     if (!isset($params['returnPath'])) {
@@ -92,13 +93,7 @@ class CRM_Mailing_Transactional {
     // check if an activityId was added in hook_civicrm_alterMailParams
     // if so, update the activity's status and add a target_contact_id
     if (!empty($params['receipt_activity_id'])) {
-      $activityParams = array(
-        'id' => $params['receipt_activity_id'],
-        'subject' => 'Receipt Sent - ' .  CRM_Utils_Array::value('subject', $params),
-        'details' => CRM_Utils_Array::value('html', $params),
-        'status_id' => 'Completed',
-      );
-      civicrm_api3('activity', 'create', $activityParams);
+      CRM_Transactional_BAO_RecipientReceipt::completeReceiptActivity($params);
     }
   }
 
@@ -245,39 +240,6 @@ class CRM_Mailing_Transactional {
   }
 
   /**
-   * Start recording receipt.
-   *
-   * @param array &$params The params passed to hook_civicrm_alterMailParams.
-   */
-  public function initiateReceipt(&$params) {
-    if (empty($params['receipt_activity_id']) && !empty($params['valueName'])) {
-      $valueName = explode('_', $params['valueName']);
-
-      if (!empty($valueName[2]) && $valueName[2] == 'receipt') {
-        $activityParams = array(
-          'source_contact_id' => CRM_Utils_Array::value('contactId', $params),
-          'activity_type_id' => "ReceiptActivity",
-          'source_record_id' => CRM_Utils_Array::value('contributionId', $params),
-          'status_id' => "Scheduled",
-        );
-        if (!empty($params['tplParams']) && !empty($params['tplParams']['contactID'])) {
-          $activityParams['target_contact_id'] = $params['tplParams']['contactID'];
-        }
-        else {
-          $activityParams['target_contact_id'] = CRM_Utils_Array::value('contactId', $params);
-        }
-
-        $id = CRM_Core_Session::getLoggedInContactID();
-        if ($id) {
-          $activityParams['source_contact_id'] = $id;
-        }
-        $result = civicrm_api3('activity', 'create', $activityParams);
-        $params['receipt_activity_id'] = $result['id'];
-      }
-    }
-  }
-
-  /**
    * Set VERP headers so CiviMail will properly process a bounce.
    * Also do what's necessary to report things including open and click tracking.
    *
@@ -286,7 +248,7 @@ class CRM_Mailing_Transactional {
    * @return void
    */
   public function verpify(&$params, $setReturnPath = TRUE) {
-    $this->initiateReceipt($params);
+    CRM_Transactional_BAO_RecipientReceipt::initiateReceipt($params);
 
     list($mailing_id, $job_id) = $this->getMailingIds(self::MAILING_NAME . (self::BY_SENDER ? " ({$params['groupName']})" : ''));
     list($contact_id, $email_id) = $this->getContactAndEmailIds($params);
@@ -340,10 +302,11 @@ class CRM_Mailing_Transactional {
       $recipient->save();
 
       if (!empty($params['receipt_activity_id']) && $event_queue_id) {
-        $insertSQL = "INSERT INTO
-          civicrm_recipient_receipt (queue_id, receipt_activity_id)
-          VALUES ({$event_queue_id}, {$params['receipt_activity_id']})";
-        CRM_Core_DAO::executeQuery($insertSQL);
+        $insertParams = [
+          'queue_id' => $event_queue_id,
+          'receipt_activity_id' => $params['receipt_activity_id'],
+        ];
+        CRM_Transactional_BAO_RecipientReceipt::create($insertParams);
       }
       $entityId = self::getEntityId($params);
       if (!empty($entityId) && !empty($params['groupName']) && !empty($event_queue_id)) {

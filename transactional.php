@@ -10,7 +10,7 @@ require_once 'transactional.civix.php';
  * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterMailParams
  */
 function transactional_civicrm_alterMailParams(&$params, $context) {
-  if ($context == 'civimail') {
+  if ($context == 'civimail' || !isset($params['groupName'])) {
     return;
   }
   CRM_Mailing_Transactional::singleton()->verpify($params);
@@ -68,16 +68,16 @@ function transactional_civicrm_alterTemplateFile($formName, &$form, $context, &$
  */
 function transactional_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) {
   if ($objectName == 'mailing' && count($headers) == 3) {
-    $headers['activity'] = array('name' => 'Activity');
-    $activity = civicrm_api3('OptionValue', 'getsingle', array(
-      'return' => array("value"),
+    $headers['activity'] = ['name' => 'Activity'];
+    $activity = civicrm_api3('OptionValue', 'getsingle', [
+      'return' => ['value'],
       'name' => "ReceiptActivity",
-    ));
+    ]);
     foreach ($rows as $queueId => $val) {
       if (!$queueId) {
         continue;
       }
-      $activityId = CRM_Core_DAO::singleValueQuery("SELECT receipt_activity_id FROM civicrm_recipient_receipt WHERE queue_id = {$queueId}");
+      $activityId = CRM_Transactional_BAO_RecipientReceipt::getReceiptActivityFromQueueID($queueId);
       if ($activityId) {
         $activityURL = CRM_Utils_System::url('civicrm/activity', "atype={$activity['value']}&action=view&reset=1&id=$activityId");
         $rows[$queueId]['activity'] = "<a href='$activityURL' title='Go to Receipt Activity'>Receipt Activity</a>";
@@ -94,6 +94,21 @@ function transactional_civicrm_searchColumns($objectName, &$headers, &$rows, &$s
  * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
  */
 function transactional_civicrm_buildForm($formName, &$form) {
+  if (!in_array($formName, [
+    'CRM_Contribute_Form_Contribution',
+    'CRM_Member_Form_Membership',
+    'CRM_Event_Form_Participant',
+    'CRM_Contact_Form_Task_Email',
+    'CRM_Contribute_Form_Contribution_Main',
+    'CRM_Contribute_Form_Contribution_Confirm',
+    'CRM_Contribute_Form_Contribution_ThankYou',
+    'CRM_Event_Form_Registration_Register',
+    'CRM_Event_Form_Registration_Confirm',
+    'CRM_Event_Form_Registration_ThankYou',
+  ])) {
+    return;
+  }
+
   $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $form);
   if (empty($contactId)) {
     $contactId = !empty($form->_contactID) ? $form->_contactID : $form->getLoggedInUserContactID();
@@ -141,13 +156,13 @@ function transactional_civicrm_install() {
     ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
   ');
 
-  civicrm_api3('OptionValue', 'create', array(
+  civicrm_api3('OptionValue', 'create', [
     'option_group_id' => "activity_type",
     'label' => "Receipt",
     'name' => "ReceiptActivity",
     'description' => "Receipt Sent",
     'icon' => "fa-envelope-o",
-  ));
+  ]);
   _transactional_civix_civicrm_install();
 }
 
@@ -166,15 +181,15 @@ function transactional_civicrm_postInstall() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
 function transactional_civicrm_uninstall() {
-  $activity = civicrm_api3('OptionValue', 'getsingle', array(
-    'return' => array("id"),
-    'name' => "ReceiptActivity",
-  ));
-  civicrm_api3('OptionValue', 'delete', array(
+  $activity = civicrm_api3('OptionValue', 'getsingle', [
+    'return' => ['id'],
+    'name' => 'ReceiptActivity',
+  ]);
+  civicrm_api3('OptionValue', 'delete', [
     'id' => $activity['id'],
-  ));
-  CRM_Core_DAO::executeQuery("DROP TABLE civicrm_transactional_mapping");
-  CRM_Core_DAO::executeQuery("DROP TABLE civicrm_recipient_receipt");
+  ]);
+  CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS civicrm_transactional_mapping");
+  CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS civicrm_recipient_receipt");
   _transactional_civix_civicrm_uninstall();
 }
 
