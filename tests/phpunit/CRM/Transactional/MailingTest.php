@@ -48,12 +48,12 @@ class CRM_Transactional_MailingTest extends \PHPUnit_Framework_TestCase implemen
    * @return result of api call, with email included.
    */
   public function generateTestContact($suffix = '') {
-    $contactParams = array(
+    $contactParams = [
       'first_name' => 'first' . $suffix . substr(sha1(rand()), 0, 7),
       'last_name' => 'last' . $suffix . substr(sha1(rand()), 0, 7),
       'email' => substr(sha1(rand()), 0, 7) . $suffix . '@example.org',
       'contact_type' => 'Individual',
-    );
+    ];
     $contact = civicrm_api3('Contact', 'create', $contactParams);
 
     if ($contact['is_error'] == 1) {
@@ -76,7 +76,7 @@ class CRM_Transactional_MailingTest extends \PHPUnit_Framework_TestCase implemen
     if ($results['count'] == 0) {
       throw new Exception('Failed to get any financial types');
     }
-    $financial_types = array();
+    $financial_types = [];
     foreach ($results['values'] as $row) {
       $financial_types[] = $row['name'];
     }
@@ -90,22 +90,22 @@ class CRM_Transactional_MailingTest extends \PHPUnit_Framework_TestCase implemen
   public function testSingleEmailActivity() {
     $contact = $this->generateTestContact();
     $contact2 = $this->generateTestContact('2');
-    $params = array(
+    $params = [
       'from' => 'from@example.com',
       'toEmail' => $contact['email'],
       'subject' => 'First Transactional extension unit test.',
       'text' => 'Testing first unit test for transactional extension',
       'html' => "<p>\n Testing first unit test for transactional extension. </p>",
-    );
-    $contactDetails = array(
-      array(
+    ];
+    $contactDetails = [
+      [
         'contact_id' => $contact['id'],
         'sort_name' => $contact['values'][$contact['id']]['sort_name'],
         'display_name' => $contact['values'][$contact['id']]['display_name'],
         'preferred_mail_format' => $contact['values'][$contact['id']]['preferred_mail_format'],
         'email' => $contact['email'],
-      ),
-    );
+      ],
+    ];
     $subject = "First Transactional extension unit test";
     $text = 'Testing first unit test for transactional extension';
     $html = "<p>\n Testing first unit test for transactional extension. </p>";
@@ -124,14 +124,14 @@ class CRM_Transactional_MailingTest extends \PHPUnit_Framework_TestCase implemen
    * when schedule reminder is sent.
    */
   public function testScheduleReminderMailing() {
-    $contactParams = array(
+    $contactParams = [
       'contact_type' => 'Individual',
       'email' => 'test-member@example.com',
       'first_name' => 'Churmondleia',
       'last_name' => 'Ōtākou',
-    );
+    ];
 
-    $actionScheduleParams = array(
+    $actionScheduleParams = [
       'name' => 'sched_eventtype_end_2month_repeat_twice_2_weeks',
       'title' => 'sched_eventtype_end_2month_repeat_twice_2_weeks',
       'body_html' => '<p>body sched_eventtype_end_2month_repeat_twice_2_weeks {event.title}</p>',
@@ -144,22 +144,22 @@ class CRM_Transactional_MailingTest extends \PHPUnit_Framework_TestCase implemen
       'start_action_offset' => '2',
       'start_action_unit' => 'week',
       'subject' => 'subject sched_eventtype_end_2month_repeat_twice_2_weeks {event.title}',
-    );
+    ];
     $contact = civicrm_api3('Contact', 'create', $contactParams);
 
-    $eventParams = array(
+    $eventParams = [
       'contact_id' => $contact['id'],
       'title' => 'Annual CiviCRM meet',
       'event_type_id' => 1,
       'start_date' => date('Ymd', strtotime('-5 day')),
       'end_date' => date('Ymd', strtotime('+2 week')),
-    );
+    ];
     $event = civicrm_api3('Event', 'create', $eventParams);
-    $participant = civicrm_api3('Participant', 'create', array('contact_id' => $contact['id'], 'event_id' => $event['id']));
+    $participant = civicrm_api3('Participant', 'create', ['contact_id' => $contact['id'], 'event_id' => $event['id']]);
 
     $actionScheduleParams['entity_value'] = 1; //CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $participant['values'][$participant['id']]['event_id'], 'event_type_id');
     $actionSched = civicrm_api3('action_schedule', 'create', $actionScheduleParams);
-    civicrm_api3('job', 'send_reminder', array());
+    civicrm_api3('job', 'send_reminder', []);
 
     $mailing = civicrm_api3('Mailing', 'get', [
       'sequential' => 1,

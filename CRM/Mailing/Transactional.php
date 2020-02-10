@@ -30,7 +30,7 @@ class CRM_Mailing_Transactional {
    *
    * @var array $dont_track_query_vars
    */
-  protected $dont_track_query_vars = array('cid', 'cs');
+  protected $dont_track_query_vars = ['cid', 'cs'];
 
   /**
    * When a form is submitted, the related contact ID is stored here.
@@ -45,7 +45,7 @@ class CRM_Mailing_Transactional {
    *
    * @var array $mailings
    */
-  protected $mailings = array();
+  protected $mailings = [];
 
   /**
    * Loading transactional mailings from the civicrm_setting table.
@@ -53,9 +53,9 @@ class CRM_Mailing_Transactional {
    * @return void
    */
   private function __construct() {
-    $api = civicrm_api3('Setting', 'getsingle', array(
+    $api = civicrm_api3('Setting', 'getsingle', [
       'return' => 'transactional_mailings',
-    ));
+    ]);
     if (!empty($api['transactional_mailings'])) {
       $this->mailings = $api['transactional_mailings'];
     }
@@ -108,14 +108,14 @@ class CRM_Mailing_Transactional {
     $contact_id = CRM_Utils_Array::value('contactId', $params);
     if ($contact_id) {
       try {
-        $email = civicrm_api3('Email', 'getsingle', array(
+        $email = civicrm_api3('Email', 'getsingle', [
           'contact_id' => $contact_id,
           'email' => $params['toEmail'],
-          'options' => array(
+          'options' => [
             'sort' => 'is_primary DESC',
             'limit' => 1,
-          ),
-        ));
+          ],
+        ]);
       }
       catch (CiviCRM_API3_Exception $e) {
         $contact_id = NULL;
@@ -126,14 +126,14 @@ class CRM_Mailing_Transactional {
       $contact_id = $this->form_contact;
       if ($contact_id) {
         try {
-          $email = civicrm_api3('Email', 'getsingle', array(
+          $email = civicrm_api3('Email', 'getsingle', [
             'contact_id' => $contact_id,
             'email' => $params['toEmail'],
-            'options' => array(
+            'options' => [
               'sort' => 'is_primary DESC',
               'limit' => 1,
-            ),
-          ));
+            ],
+          ]);
         }
         catch (CiviCRM_API3_Exception $e) {
           $contact_id = NULL;
@@ -143,20 +143,20 @@ class CRM_Mailing_Transactional {
     if (!$contact_id) {
       // now we have to just pick one
       try {
-        $email = civicrm_api3('Email', 'getsingle', array(
+        $email = civicrm_api3('Email', 'getsingle', [
           'email' => $params['toEmail'],
-          'options' => array(
+          'options' => [
             'sort' => 'is_primary DESC, id DESC',
             'limit' => 1,
-          ),
-        ));
+          ],
+        ]);
         $contact_id = $email['contact_id'];
       }
       catch (CiviCRM_API3_Exception $e) {
         $contact_id = NULL;
       }
     }
-    return array($contact_id ?: 0, $contact_id ? $email['id'] : 0);
+    return [$contact_id ? : 0, $contact_id ? $email['id'] : 0];
   }
 
   /**
@@ -170,15 +170,19 @@ class CRM_Mailing_Transactional {
     if (!empty($this->mailings[$name])) {
       try {
         //Check if mailing id and job id are valid.
-        civicrm_api3('Mailing', 'getsingle', array('id' => $this->mailings[$name]['mailing_id']));
-        civicrm_api3('MailingJob', 'getsingle', array('id' => $this->mailings[$name]['job_id']));
+        civicrm_api3('Mailing', 'getsingle', [
+          'id' => $this->mailings[$name]['mailing_id']
+        ]);
+        civicrm_api3('MailingJob', 'getsingle', [
+          'id' => $this->mailings[$name]['job_id']
+        ]);
       }
       catch (CiviCRM_API3_Exception $e) {
         unset($this->mailings[$name]);
       }
     }
     if (empty($this->mailings[$name])) {
-      $api = civicrm_api3('Mailing', 'create', array(
+      $api = civicrm_api3('Mailing', 'create', [
         'sequential' => 1,
         'name' => $name,
         'created_id' => 'user_contact_id',
@@ -193,7 +197,7 @@ class CRM_Mailing_Transactional {
         'is_completed' => 1,
         'override_verp' => 0,
         'visibility' => 'User and User Admin Only',
-      ));
+      ]);
       $mailing = $api['values'][0];
 
       $job = new CRM_Mailing_BAO_MailingJob();
@@ -203,14 +207,14 @@ class CRM_Mailing_Transactional {
       $job->scheduled_date = $job->start_date = $job->end_date = date('YmdHis');
       $job->save();
 
-      $this->mailings[$name] = array(
+      $this->mailings[$name] = [
         'mailing_id' => $mailing['id'],
         'job_id' => $job->id,
-      );
+      ];
       // Save the mailings to the civicrm_setting table.
-      civicrm_api3('Setting', 'create', array(
+      civicrm_api3('Setting', 'create', [
         'transactional_mailings' => $this->mailings,
-      ));
+      ]);
     }
     return array_values($this->mailings[$name]);
   }
@@ -257,12 +261,12 @@ class CRM_Mailing_Transactional {
       $config = CRM_Core_Config::singleton();
 
       $hash = substr(sha1("{$job_id}:{$email_id}:{$contact_id}:" . time()), 0, 16);
-      $api = civicrm_api3('MailingEventQueue', 'create', array(
+      $api = civicrm_api3('MailingEventQueue', 'create', [
         'job_id' => $job_id,
         'email_id' => $email_id,
         'contact_id' => $contact_id,
         'hash' => $hash,
-      ));
+      ]);
       $event_queue_id = $api['id'];
 
       // create the VERP header just like CiviMail does
@@ -270,12 +274,12 @@ class CRM_Mailing_Transactional {
       $emailDomain = CRM_Core_BAO_MailSettings::defaultDomain();
 
       $bounce = implode($config->verpSeparator,
-        array(
+        [
           $localpart . 'b',
           $job_id,
           $event_queue_id,
           $hash,
-        )
+        ]
       ) . "@$emailDomain";
 
       // add the header to the mail params
@@ -283,7 +287,7 @@ class CRM_Mailing_Transactional {
         $params['returnPath'] = $bounce;
       }
       if (empty($params['headers'])) {
-        $params['headers'] = array();
+        $params['headers'] = [];
       }
       $params['headers']['X-CiviMail-Bounce'] = $bounce;
 
@@ -324,7 +328,7 @@ class CRM_Mailing_Transactional {
       // first we find all href attributes in the HTML
       preg_match_all('/href=[\'|"].*?[\'|"]/', $params['html'], $matches);
       $urls = $matches[0];
-      $vars = $new = array();
+      $vars = $new = [];
 
       foreach ($urls as $url) {
         $parts = parse_url(substr($url, 6, -1));

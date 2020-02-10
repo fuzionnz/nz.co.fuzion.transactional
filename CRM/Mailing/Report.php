@@ -8,40 +8,40 @@ class CRM_Mailing_Report {
    * @param object $form
    */
   public static function addEntityIdToDetailReport(&$columns, $form) {
-    $newCol = array(
-      'fields' => array(
-        'entity_id' => array(
+    $newCol = [
+      'fields' => [
+        'entity_id' => [
           'name' => 'entity_id',
           'title' => 'Entity ID',
           'dbAlias' => 'civicrm_transactional_mapping.entity_id',
-        )
-      ),
-      'filters' => array(
-        'entity_id' => array(
+        ],
+      ],
+      'filters' => [
+        'entity_id' => [
           'name' => 'entity_id',
           'title' => 'Entity ID',
           'type' => CRM_Utils_Type::T_STRING,
           'dbAlias' => 'civicrm_transactional_mapping.entity_id',
-        )
-      ),
-      'order_bys' => array(
-        'entity_id' => array(
+        ],
+      ],
+      'order_bys' => [
+        'entity_id' => [
           'name' => 'entity_id',
           'title' => 'Entity ID',
           'dbAlias' => 'civicrm_transactional_mapping.entity_id',
-        )
-      )
-    );
+        ],
+      ],
+    ];
     $columns = self::insertKeyValuePair($columns, 'civicrm_transactional_mapping', $newCol, 2);
 
     $filters = $form->getVar('_filters');
-    $newFilter = array(
-      'entity_id' => array(
+    $newFilter = [
+      'entity_id' => [
         'name' => 'entity_id',
         'title' => 'Entity ID',
         'dbAlias' => 'civicrm_transactional_mapping.entity_id',
-      )
-    );
+      ],
+    ];
     $filters = self::insertKeyValuePair($filters, 'civicrm_transactional_mapping', $newFilter, 2);
     $form->setVar('_filters', $filters);
   }
@@ -58,7 +58,7 @@ class CRM_Mailing_Report {
         $mailName = explode("Transactional Email", $value['civicrm_mailing_mailing_name']);
         $transactionalType = trim($mailName[1], "( )");
 
-        if (in_array($transactionalType, array('Scheduled Reminder Sender', 'msg_tpl_workflow_case', 'Activity Email Sender'))) {
+        if (in_array($transactionalType, ['Scheduled Reminder Sender', 'msg_tpl_workflow_case', 'Activity Email Sender'])) {
           $dao = CRM_Core_DAO::executeQuery("
             SELECT entity_id
             FROM civicrm_transactional_mapping
@@ -107,16 +107,16 @@ class CRM_Mailing_Report {
       $var->setVar('_from', $from);
     }
     if (!empty($var->_columnHeaders) && empty($var->_columnHeaders['civicrm_transactional_mapping_entity_id']) && !empty($params['fields']['entity_id'])) {
-      $var->_columnHeaders['civicrm_transactional_mapping_entity_id'] = array(
+      $var->_columnHeaders['civicrm_transactional_mapping_entity_id'] = [
         'title' => "Entity ID",
-      );
+      ];
     }
 
-    $var->_columnHeaders['mailing_queue_id'] = array(
+    $var->_columnHeaders['mailing_queue_id'] = [
       'type' => 1,
       'title' => 'Mailing Queue id',
       'no_display' => TRUE,
-    );
+    ];
     $var->_select .= ", civicrm_mailing_event_queue.id as mailing_queue_id";
   }
 
@@ -131,7 +131,7 @@ class CRM_Mailing_Report {
   public static function insertKeyValuePair($arr, $key, $val, $index){
     $arrayEnd = array_splice($arr, $index);
     $arrayStart = array_splice($arr, 0, $index);
-    return array_merge($arrayStart, array($key=>$val), $arrayEnd);
+    return array_merge($arrayStart, [$key => $val], $arrayEnd);
   }
 
 }
