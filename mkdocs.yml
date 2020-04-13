@@ -1,6 +1,7 @@
 site_name: Transactional Mail - Bounce and Tracking Handler
 repo_url: https://github.com/fuzionnz/nz.co.fuzion.transactional
-theme: material
+theme: 
+  name: material
 
 nav:
 - Home: index.md
