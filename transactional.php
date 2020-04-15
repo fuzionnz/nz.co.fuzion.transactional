@@ -17,6 +17,20 @@ function transactional_civicrm_alterMailParams(&$params, $context) {
 }
 
 /**
+ * Implements hook_civicrm_navigationMenu().
+ *
+ * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
+ */
+function transactional_civicrm_navigationMenu(&$menu) {
+  _transactional_civix_insert_navigation_menu($menu, 'Administer/System Settings', [
+    'label' => ts('Transactional Settings'),
+    'name' => 'transactional-settings',
+    'url' => 'civicrm/transactional/settings',
+    'permission' => 'administer CiviCRM',
+  ]);
+}
+
+/**
  * Implements hook_civicrm_alterReportVar().
  *
  * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterReportVar

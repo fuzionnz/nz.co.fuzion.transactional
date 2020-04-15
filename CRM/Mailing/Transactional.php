@@ -92,7 +92,7 @@ class CRM_Mailing_Transactional {
 
     // check if an activityId was added in hook_civicrm_alterMailParams
     // if so, update the activity's status and add a target_contact_id
-    if (!empty($params['receipt_activity_id'])) {
+    if (Civi::settings()->get('create_activities') && !empty($params['receipt_activity_id'])) {
       CRM_Transactional_BAO_RecipientReceipt::completeReceiptActivity($params);
     }
   }
@@ -252,7 +252,9 @@ class CRM_Mailing_Transactional {
    * @return void
    */
   public function verpify(&$params, $setReturnPath = TRUE) {
-    CRM_Transactional_BAO_RecipientReceipt::initiateReceipt($params);
+    if (Civi::settings()->get('create_activities')) {
+      CRM_Transactional_BAO_RecipientReceipt::initiateReceipt($params);
+    }
 
     list($mailing_id, $job_id) = $this->getMailingIds(self::MAILING_NAME . (self::BY_SENDER ? " ({$params['groupName']})" : ''));
     list($contact_id, $email_id) = $this->getContactAndEmailIds($params);
@@ -305,7 +307,7 @@ class CRM_Mailing_Transactional {
       $recipient->email_id = $email_id;
       $recipient->save();
 
-      if (!empty($params['receipt_activity_id']) && $event_queue_id) {
+      if (Civi::settings()->get('create_activities') && !empty($params['receipt_activity_id']) && $event_queue_id) {
         $insertParams = [
           'queue_id' => $event_queue_id,
           'receipt_activity_id' => $params['receipt_activity_id'],
