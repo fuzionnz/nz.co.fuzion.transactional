@@ -1,8 +1,9 @@
 site_name: Transactional Mail - Bounce and Tracking Handler
 repo_url: https://github.com/fuzionnz/nz.co.fuzion.transactional
-theme: material
+theme: 
+  name: material
 
-pages:
+nav:
 - Home: index.md
 
 markdown_extensions:
@@ -10,7 +11,8 @@ markdown_extensions:
   - admonition
   - def_list
   - codehilite
-  - toc(permalink=true)
+  - toc:
+      permalink: true
   - pymdownx.superfences
   - pymdownx.inlinehilite
   - pymdownx.tilde
