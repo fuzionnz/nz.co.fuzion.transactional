@@ -154,6 +154,8 @@ function transactional_civicrm_xmlMenu(&$files) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
 function transactional_civicrm_install() {
+  Civi::settings()->set('create_activities', TRUE);
+
   CRM_Core_DAO::executeQuery('CREATE TABLE IF NOT EXISTS `civicrm_recipient_receipt` (
     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT \'Unique ID\',
     `queue_id` int(10)    COMMENT \'Event Queue id\',
