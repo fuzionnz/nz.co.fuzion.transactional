@@ -177,6 +177,7 @@ class CRM_Transactional_Upgrader extends CRM_Transactional_Upgrader_Base {
 
   public function upgrade_4703() {
     Civi::settings()->set('create_activities', TRUE);
+    return TRUE;
   }
 
 }
