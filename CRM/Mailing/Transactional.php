@@ -192,8 +192,6 @@ class CRM_Mailing_Transactional {
         'unsubscribe_id' => NULL,
         'resubscribe_id' => NULL,
         'optout_id' => NULL,
-        'url_tracking' => 1,
-        'open_tracking' => 1,
         'is_completed' => 1,
         'override_verp' => 0,
         'visibility' => 'User and User Admin Only',
