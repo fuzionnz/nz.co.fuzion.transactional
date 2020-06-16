@@ -28,6 +28,7 @@ Standard Activities are created for Receipts and Invoices
 * In the mailing summary report, the time listed for Intended Recipients uses the start time of the job. Since transactional mailings only have one job, all times will be listed the same regardless of when the message was actually sent. If you view the Successful Deliveries you will see the time the message was actually sent.
 * It uses a custom template for the mailing summary report. It's replaced using a hook instead of an override.
 * This extension should work for 4.6 CiviCRM.
+* Note it is not recommended to enable this extension without the CiviMail Component enabled.
 
 ## Sponsorship
 
