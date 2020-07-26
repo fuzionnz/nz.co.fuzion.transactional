@@ -256,7 +256,17 @@ class CRM_Mailing_Transactional {
       CRM_Transactional_BAO_RecipientReceipt::initiateReceipt($params);
     }
 
-    list($mailing_id, $job_id) = $this->getMailingIds(self::MAILING_NAME . (self::BY_SENDER ? " ({$params['groupName']})" : ''));
+    $name = self::MAILING_NAME;
+    if (self::BY_SENDER) {
+      if (isset($params['valueName'])) {
+        $name .= ' (' . $params['valueName']  . ')';
+      }
+      else if (isset($params['groupName'])) {
+        $name .= ' (' .  $params['groupName'] . ')';
+      }
+    }
+
+    list($mailing_id, $job_id) = $this->getMailingIds($name);
     list($contact_id, $email_id) = $this->getContactAndEmailIds($params);
 
     if ($job_id && $contact_id && $email_id) {
@@ -314,11 +324,26 @@ class CRM_Mailing_Transactional {
         ];
         CRM_Transactional_BAO_RecipientReceipt::create($insertParams);
       }
+
       $entityId = self::getEntityId($params);
       if (!empty($entityId) && !empty($params['groupName']) && !empty($event_queue_id)) {
-        CRM_Core_DAO::executeQuery("INSERT INTO civicrm_transactional_mapping
-          (entity_id, option_group_name, mailing_event_queue_id) VALUES
-          ({$entityId}, '{$params['groupName']}', {$event_queue_id})");
+        // Check upgrade has run and added column
+        if (isset($params['valueName'])) {
+          if (CRM_Core_DAO::checkFieldExists('civicrm_transactional_mapping', 'option_value_name')) {
+            $qry_ins = "INSERT INTO civicrm_transactional_mapping (entity_id, option_value_name, mailing_event_queue_id) VALUES ({$entityId}, '{$params['valueName']}', {$event_queue_id})";
+          }
+        }
+        if (!isset($qry_ins) && isset($params['groupName'])) {
+          // Todo: add depreciation warning msg.
+          $qry_ins = "INSERT INTO civicrm_transactional_mapping (entity_id, option_group_name, mailing_event_queue_id) VALUES ({$entityId}, '{$params['groupName']}', {$event_queue_id})";
+        }
+        if (!isset($qry_ins)) {
+          // Problem - we shouldn't get here.
+          CRM_Core_Error::debug_log_message('Error expected valueName or groupName to be set but both are unset');
+        }
+        else {
+          CRM_Core_DAO::executeQuery($qry_ins);
+        }
       }
 
       // open tracking
@@ -358,11 +383,18 @@ class CRM_Mailing_Transactional {
    * @return integer
    */
   public static function getEntityId($params) {
-    if ($params['groupName'] == 'msg_tpl_workflow_case'
-      && !empty($params['tplParams']['contact']) && !empty($params['tplParams']['contact']['activity_id'])) {
+    if (
+      (
+        (isset($params['valueName']) && ($params['valueName']  == 'case_activity')) ||
+        (isset($params['groupName']) && ($params['groupName'] == 'msg_tpl_workflow_case'))
+      ) &&
+      !empty($params['tplParams']['contact']) &&
+      !empty($params['tplParams']['contact']['activity_id'])
+    ) {
       return $params['tplParams']['contact']['activity_id'];
     }
-    elseif ($params['groupName'] == 'Activity Email Sender') {
+    elseif (isset($params['groupName']) && ($params['groupName']  == 'Activity Email Sender')) {
+      // Todo - identify equivalent value for valueName
       $dao = CRM_Core_DAO::executeQuery("SELECT MAX(id) as activity_id FROM civicrm_activity");
       if ($dao->fetch()) {
         return $dao->activity_id;
