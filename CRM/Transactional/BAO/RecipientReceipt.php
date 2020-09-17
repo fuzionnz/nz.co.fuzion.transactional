@@ -43,11 +43,15 @@ class CRM_Transactional_BAO_RecipientReceipt extends CRM_Transactional_DAO_Recip
    *  The params passed to hook_civicrm_alterMailParams.
    */
   public static function initiateReceipt(&$params) {
+    if (!empty($params['PDFFilename']) && empty($params['isEmailPdf'])) {
+      return;
+    }
     if (empty($params['receipt_activity_id']) && !empty($params['valueName'])) {
       $valueName = explode('_', $params['valueName']);
 
       if (!empty($valueName[2]) && $valueName[2] == 'receipt') {
         $activityParams = array(
+          'subject' => ts('Receipt Email initiated for %1 template.', [1 => $params['valueName']]),
           'source_contact_id' => CRM_Utils_Array::value('contactId', $params),
           'activity_type_id' => "ReceiptActivity",
           'source_record_id' => CRM_Utils_Array::value('contributionId', $params),
