@@ -76,6 +76,21 @@ function transactional_civicrm_alterTemplateFile($formName, &$form, $context, &$
 }
 
 /**
+ * Do not consider transactional mailing to be displayed
+ * on contact summary page (Mailing tab).
+ */
+function transactional_civicrm_apiWrappers(&$wrappers, $apiRequest) {
+  if ($apiRequest['entity'] == 'MailingContact') {
+    if ($apiRequest['action'] == 'get') {
+      $wrappers[] = new CRM_Mailing_MailingContactAPIWrapper();
+    }
+    if ($apiRequest['action'] == 'getcount') {
+      $wrappers[] = new CRM_Mailing_MailingContactGetCountAPIWrapper();
+    }
+  }
+}
+
+/**
  * Implements hook_civicrm_searchColumns().
  *
  * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_searchColumns
