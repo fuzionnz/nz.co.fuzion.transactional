@@ -14,10 +14,10 @@ class CRM_Mailing_MailingContactGetCountAPIWrapper implements API_Wrapper {
       'sequential' => 1,
       'return' => ["transactional_mailings"],
     ]);
-    if (empty($transactionalMailings['values'][0]['transactional_mailings'])) {
+    if (empty($apiRequest['params']['contact_id']) || empty($transactionalMailings['values'][0]['transactional_mailings'])) {
       return $result;
     }
-    return $result - count($transactionalMailings['values'][0]['transactional_mailings']);
+    return civicrm_api3('MailingContact', 'get', $apiRequest['params'])['count'] ?? 0;
   }
 
 }
