@@ -80,15 +80,13 @@ class CRM_Mailing_Transactional {
    *  Mail parameters
    */
   public function delivered($params) {
-    if (!isset($params['returnPath'])) {
-      return;
+    if (isset($params['returnPath']) && !empty($params['transactional_return_path'])) {
+      $parts = explode(CRM_Core_Config::singleton()->verpSeparator, $params['returnPath']);
+      $delivered = new CRM_Mailing_Event_BAO_Delivered();
+      $delivered->event_queue_id = $parts[2];
+      $delivered->time_stamp = date('YmdHis');
+      $delivered->save();
     }
-
-    $parts = explode(CRM_Core_Config::singleton()->verpSeparator, $params['returnPath']);
-    $delivered = new CRM_Mailing_Event_BAO_Delivered();
-    $delivered->event_queue_id = $parts[2];
-    $delivered->time_stamp = date('YmdHis');
-    $delivered->save();
 
     // check if an activityId was added in hook_civicrm_alterMailParams
     // if so, update the activity's status and add a target_contact_id
@@ -247,8 +245,11 @@ class CRM_Mailing_Transactional {
    * Set VERP headers so CiviMail will properly process a bounce.
    * Also do what's necessary to report things including open and click tracking.
    *
-   * @param  array &$params The params passed to hook_civicrm_alterMailParams.
-   * @param  bool $setReturnPath Whether to set the Return-Path. If FALSE, only X-CiviMail-Bounce will be set. Mainly for testing purposes.
+   * @param  array &$params
+   *  The params passed to hook_civicrm_alterMailParams.
+   * @param  bool $setReturnPath
+   *  Whether to set the Return-Path. If FALSE, only X-CiviMail-Bounce will be set. Mainly for testing purposes.
+   *
    * @return void
    */
   public function verpify(&$params, $setReturnPath = TRUE) {
@@ -287,6 +288,7 @@ class CRM_Mailing_Transactional {
       // add the header to the mail params
       if ($setReturnPath) {
         $params['returnPath'] = $bounce;
+        $params['transactional_return_path'] = TRUE;
       }
       if (empty($params['headers'])) {
         $params['headers'] = [];
