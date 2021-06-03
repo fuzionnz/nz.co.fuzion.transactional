@@ -17,6 +17,7 @@ class CRM_Mailing_MailingContactGetCountAPIWrapper implements API_Wrapper {
     if (empty($apiRequest['params']['contact_id']) || empty($transactionalMailings['values'][0]['transactional_mailings'])) {
       return $result;
     }
+    $apiRequest['params']['options']['limit'] = 0;
     return civicrm_api3('MailingContact', 'get', $apiRequest['params'])['count'] ?? 0;
   }
 

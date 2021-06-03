@@ -14,6 +14,7 @@ class CRM_Mailing_MailingContactAPIWrapper implements API_Wrapper {
       'sequential' => 1,
       'return' => ["transactional_mailings"],
     ]);
+
     if (empty($apiRequest['params']['contact_id']) || empty($transactionalMailings['values'][0]['transactional_mailings'])) {
       return $result;
     }
@@ -25,6 +26,7 @@ class CRM_Mailing_MailingContactAPIWrapper implements API_Wrapper {
         $result['count']--;
       }
     }
+    return $result;
   }
 
 }
