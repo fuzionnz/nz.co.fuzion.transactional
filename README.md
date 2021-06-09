@@ -29,6 +29,7 @@ Standard Activities are created for Receipts and Invoices
 * It uses a custom template for the mailing summary report. It's replaced using a hook instead of an override.
 * This extension should work for 4.6 CiviCRM.
 * Note it is not recommended to enable this extension without the CiviMail Component enabled.
+* Make sure you have `open` and `click-through` tracking enabled by default at CiviMail Component Settings => `/civicrm/admin/setting/preferences/mailing?reset=1`, else they'll not be tracked for transactional emails as well.
 
 ## Sponsorship
 
@@ -36,7 +37,7 @@ Alongside funding from Fuzion and its clients, the development of this extension
 
 ## Support
 
-This extension is contributed by [Fuzion](https://www.fuzion.co.nz). 
+This extension is contributed by [Fuzion](https://www.fuzion.co.nz).
 
 We welcome contributions and bug reports via the [nz.co.fuzion.transactional issue queue](https://github.com/fuzionnz/nz.co.fuzion.transactional/issues).
 
