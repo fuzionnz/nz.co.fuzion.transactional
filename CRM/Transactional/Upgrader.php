@@ -180,4 +180,20 @@ class CRM_Transactional_Upgrader extends CRM_Transactional_Upgrader_Base {
     return TRUE;
   }
 
+  /*
+   * Adds additional column to civicrm_transactional_mapping to
+   * account for depreciation of passing of group name in favour of value name
+   */
+  public function upgrade_4704() {
+    $this->ctx->log->info('Applying update 4704');
+    CRM_Core_DAO::executeQuery(
+        'ALTER TABLE `civicrm_transactional_mapping`
+         ADD COLUMN
+        `option_value_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL
+        AFTER `option_group_name`;
+      ');
+    return TRUE;
+
+  }
+
 }

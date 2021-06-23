@@ -10,7 +10,7 @@ require_once 'transactional.civix.php';
  * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterMailParams
  */
 function transactional_civicrm_alterMailParams(&$params, $context) {
-  if ($context == 'civimail' || !isset($params['groupName'])) {
+  if ($context == 'civimail' || (!isset($params['groupName']) && !isset($params['valueName']))) {
     return;
   }
   CRM_Mailing_Transactional::singleton()->verpify($params);
