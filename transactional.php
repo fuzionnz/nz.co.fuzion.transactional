@@ -10,7 +10,7 @@ require_once 'transactional.civix.php';
  * @link https://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterMailParams
  */
 function transactional_civicrm_alterMailParams(&$params, $context) {
-  if ($context == 'civimail' || !isset($params['groupName'])) {
+  if ($context == 'civimail') {
     return;
   }
   CRM_Mailing_Transactional::singleton()->verpify($params);
@@ -181,7 +181,7 @@ function transactional_civicrm_install() {
   CRM_Core_DAO::executeQuery('CREATE TABLE IF NOT EXISTS `civicrm_transactional_mapping` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
     `entity_id` int(11) DEFAULT NULL,
-    `option_group_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+    `mailing_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
     `mailing_event_queue_id` int(11) DEFAULT NULL,
       PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
