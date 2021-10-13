@@ -181,18 +181,15 @@ class CRM_Transactional_Upgrader extends CRM_Transactional_Upgrader_Base {
   }
 
   public function upgrade_4704() {
+    $this->ctx->log->info('Applying update 4704');
     if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_transactional_mapping', 'option_group_name')) {
       CRM_Core_DAO::executeQuery('ALTER TABLE civicrm_transactional_mapping CHANGE option_group_name mailing_name varchar(255)');
     }
-    return TRUE;
-  }
-
-  public function upgrade_4703() {
-    $this->ctx->log->info('Applying update 4703');
     CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing
       SET scheduled_id = created_id
       WHERE name LIKE 'Transactional Email%'
-        AND is_completed = 1 AND scheduled_id IS NULL");
+        AND is_completed = 1 AND scheduled_id IS NULL
+    ");
     return TRUE;
   }
 
