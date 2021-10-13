@@ -171,7 +171,7 @@ class CRM_Transactional_MailingTest extends PHPUnit\Framework\TestCase implement
     $transactionalMapping = "SELECT * FROM civicrm_transactional_mapping";
     $dao = CRM_Core_DAO::executeQuery($transactionalMapping);
     if ($dao->fetch()) {
-      $this->assertEquals('Scheduled Reminder Sender', $dao->option_group_name);
+      $this->assertEquals('Scheduled Reminder Sender', $dao->mailing_name);
       $this->assertEquals($actionSched['id'], $dao->entity_id);
     }
   }
@@ -224,17 +224,17 @@ class CRM_Transactional_MailingTest extends PHPUnit\Framework\TestCase implement
     // Test mailing has been created
     $mailing = civicrm_api3('Mailing', 'get', [
       'sequential' => 1,
-      'name' => ['=' => "Transactional Email (msg_tpl_workflow_contribution)"],
+      'name' => ['=' => "Transactional Email (contribution_online_receipt)"],
     ]);
-    $this->assertEquals(1, $mailing['count'], "expected 1 mailing with name: Transactional Email (msg_tpl_workflow_contribution) found: {$mailing['count']}");
+    $this->assertEquals(1, $mailing['count'], "expected 1 mailing with name: Transactional Email (contribution_online_receipt) found: {$mailing['count']}");
 
     // Test the mailing was updated recently
     $result = civicrm_api3('Mailing', 'get', [
       'sequential' => 1,
-      'name' => ['=' => "Transactional Email (msg_tpl_workflow_contribution)"],
+      'name' => ['=' => "Transactional Email (contribution_online_receipt)"],
       'modified_date' => ['>=' => $modified_date],
     ]);
-    $this->assertEquals(1, $mailing['count'], "expected 1 mailing updated since $modified_date with name: Transactional Email (msg_tpl_workflow_contribution) found: {$mailing['count']}");
+    $this->assertEquals(1, $mailing['count'], "expected 1 mailing updated since $modified_date with name: Transactional Email (contribution_online_receipt) found: {$mailing['count']}");
   }
 
 }

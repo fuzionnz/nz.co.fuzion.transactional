@@ -240,6 +240,33 @@ class CRM_Mailing_Transactional {
   }
 
   /**
+   * Returns the transactional mailing name.
+   *
+   * If a workflow is set on the email, the email will be tracked in the "Transactional Email (workflow name)" mailing.
+   *
+   * For activities and schedule reminder a separate mailing is created.
+   *
+   * @param array $params
+   *
+   * @return string $mailingName
+   */
+  protected function getMailingName($params) {
+    $mailingName = $params['workflow'] ?? NULL;
+    // Is this a normal email activity or a reminder email.
+    if (!empty($params['groupName']) && in_array($params['groupName'], ['Scheduled Reminder Sender', 'Activity Email Sender'])) {
+      $mailingName = $params['groupName'];
+    }
+
+    // Just in case if the groupName param is removed for reminder and activities.
+    // TODO - patch core so it sets entity = activity for a normal email activity if groupName = Activity Email Sender is removed from this call.
+    if (!empty($params['entity']) && $params['entity'] == 'action_schedule') {
+      $mailingName = 'Scheduled Reminder Sender';
+    }
+
+    return $mailingName;
+  }
+
+  /**
    * Set VERP headers so CiviMail will properly process a bounce.
    * Also do what's necessary to report things including open and click tracking.
    *
@@ -251,14 +278,19 @@ class CRM_Mailing_Transactional {
    * @return void
    */
   public function verpify(&$params, $setReturnPath = TRUE) {
+    $mailingName = $this->getMailingName($params);
+    if (empty($mailingName) || $mailingName == 'UNKNOWN') {
+      return;
+    }
+
     if (Civi::settings()->get('create_activities')) {
       CRM_Transactional_BAO_RecipientReceipt::initiateReceipt($params);
     }
 
-    list($mailing_id, $job_id) = $this->getMailingIds(self::MAILING_NAME . (self::BY_SENDER ? " ({$params['groupName']})" : ''));
+    list($mailing_id, $job_id) = $this->getMailingIds(self::MAILING_NAME . (self::BY_SENDER ? " ({$mailingName})" : ''));
     list($contact_id, $email_id) = $this->getContactAndEmailIds($params);
 
-    if ($job_id && $contact_id && $email_id) {
+    if ($job_id && $contact_id && $email_id && !empty($params['html'])) {
       $config = CRM_Core_Config::singleton();
 
       $hash = substr(sha1("{$job_id}:{$email_id}:{$contact_id}:" . time()), 0, 16);
@@ -314,11 +346,11 @@ class CRM_Mailing_Transactional {
         ];
         CRM_Transactional_BAO_RecipientReceipt::create($insertParams);
       }
-      $entityId = self::getEntityId($params);
-      if (!empty($entityId) && !empty($params['groupName']) && !empty($event_queue_id)) {
+      $entityId = self::getEntityId($params, $mailingName);
+      if (!empty($entityId) && !empty($mailingName) && !empty($event_queue_id)) {
         CRM_Core_DAO::executeQuery("INSERT INTO civicrm_transactional_mapping
-          (entity_id, option_group_name, mailing_event_queue_id) VALUES
-          ({$entityId}, '{$params['groupName']}', {$event_queue_id})");
+          (entity_id, mailing_name, mailing_event_queue_id) VALUES
+          ({$entityId}, '{$mailingName}', {$event_queue_id})");
       }
 
       // open tracking
@@ -357,12 +389,12 @@ class CRM_Mailing_Transactional {
    *
    * @return integer
    */
-  public static function getEntityId($params) {
-    if ($params['groupName'] == 'msg_tpl_workflow_case'
+  public static function getEntityId($params, $mailingName) {
+    if ($mailingName == 'case_activity'
       && !empty($params['tplParams']['contact']) && !empty($params['tplParams']['contact']['activity_id'])) {
       return $params['tplParams']['contact']['activity_id'];
     }
-    elseif ($params['groupName'] == 'Activity Email Sender') {
+    elseif ($mailingName == 'Activity Email Sender') {
       $dao = CRM_Core_DAO::executeQuery("SELECT MAX(id) as activity_id FROM civicrm_activity");
       if ($dao->fetch()) {
         return $dao->activity_id;

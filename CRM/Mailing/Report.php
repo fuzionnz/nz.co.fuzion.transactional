@@ -58,11 +58,11 @@ class CRM_Mailing_Report {
         $mailName = explode("Transactional Email", $value['civicrm_mailing_mailing_name']);
         $transactionalType = trim($mailName[1], "( )");
 
-        if (in_array($transactionalType, ['Scheduled Reminder Sender', 'msg_tpl_workflow_case', 'Activity Email Sender'])) {
+        if (in_array($transactionalType, ['Scheduled Reminder Sender', 'case_activity', 'Activity Email Sender'])) {
           $dao = CRM_Core_DAO::executeQuery("
             SELECT entity_id
             FROM civicrm_transactional_mapping
-            WHERE mailing_event_queue_id = {$value['mailing_queue_id']} AND option_group_name = '{$transactionalType}'"
+            WHERE mailing_event_queue_id = {$value['mailing_queue_id']} AND mailing_name = '{$transactionalType}'"
           );
           if ($dao->fetch()) {
             $tableName = 'civicrm_activity';
