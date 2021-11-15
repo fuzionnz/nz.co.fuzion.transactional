@@ -140,7 +140,7 @@ function transactional_civicrm_buildForm($formName, &$form) {
 
   $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $form);
   if (empty($contactId)) {
-    $contactId = !empty($form->_contactID) ? $form->_contactID : $form->getLoggedInUserContactID();
+    $contactId = !empty($form->_contactID) ? $form->_contactID : CRM_Core_Session::getLoggedInContactID();
   }
   CRM_Mailing_Transactional::singleton()->setFormContact($contactId);
 }
