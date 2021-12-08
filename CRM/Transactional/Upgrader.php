@@ -183,6 +183,9 @@ class CRM_Transactional_Upgrader extends CRM_Transactional_Upgrader_Base {
   public function upgrade_4704() {
     if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_transactional_mapping', 'option_group_name')) {
       CRM_Core_DAO::executeQuery('ALTER TABLE civicrm_transactional_mapping CHANGE option_group_name mailing_name varchar(255)');
+      if (CRM_Core_Config::singleton()->logging && CRM_Core_BAO_SchemaHandler::checkIfFieldExists('log_civicrm_transactional_mapping', 'option_group_name')) {
+        CRM_Core_DAO::executeQuery('ALTER TABLE log_civicrm_transactional_mapping CHANGE option_group_name mailing_name varchar(255)');
+      }
     }
     return TRUE;
   }
