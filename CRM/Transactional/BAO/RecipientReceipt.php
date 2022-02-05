@@ -46,12 +46,13 @@ class CRM_Transactional_BAO_RecipientReceipt extends CRM_Transactional_DAO_Recip
     if (Civi::settings()->get('invoice_is_email_pdf') && !empty($params['PDFFilename']) && empty($params['isEmailPdf'])) {
       return;
     }
-    if (empty($params['receipt_activity_id']) && !empty($params['workflow'])) {
-      $workflow = explode('_', $params['workflow']);
+    $workflowName = $params['workflow'] ?? $params['valueName'] ?? NULL;
+    if (empty($params['receipt_activity_id']) && !empty($workflowName)) {
+      $workflow = explode('_', $workflowName);
 
       if (!empty($workflow[2]) && $workflow[2] == 'receipt') {
         $activityParams = array(
-          'subject' => ts('Receipt Email initiated for %1 template.', [1 => $params['workflow']]),
+          'subject' => ts('Receipt Email initiated for %1 template.', [1 => $workflowName]),
           'source_contact_id' => CRM_Utils_Array::value('contactId', $params),
           'activity_type_id' => "ReceiptActivity",
           'source_record_id' => CRM_Utils_Array::value('contributionId', $params),
