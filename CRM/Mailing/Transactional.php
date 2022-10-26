@@ -355,8 +355,7 @@ class CRM_Mailing_Transactional {
 
       // open tracking
       $params['html'] = CRM_Utils_Array::value('html', $params, '');
-      $params['html'] .= "\n" . '<img src="' . $config->userFrameworkResourceURL .
-        "extern/open.php?q=$event_queue_id\" width='1' height='1' alt='' border='0'>";
+      $params['html'] .= "\n" . '<img src="' . CRM_Utils_System::externUrl('extern/open', "q=$event_queue_id") . "\" width='1' height='1' alt='' border='0'>";
 
       // click tracking - it's a little more involved
       // first we find all href attributes in the HTML
