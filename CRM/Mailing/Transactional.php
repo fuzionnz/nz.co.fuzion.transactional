@@ -251,7 +251,7 @@ class CRM_Mailing_Transactional {
    * @return string $mailingName
    */
   protected function getMailingName($params) {
-    $mailingName = $params['workflow'] ?? NULL;
+    $mailingName = $params['workflow'] ?? $params['valueName'] ?? NULL;
     // Is this a normal email activity or a reminder email.
     if (!empty($params['groupName']) && in_array($params['groupName'], ['Scheduled Reminder Sender', 'Activity Email Sender'])) {
       $mailingName = $params['groupName'];
@@ -282,7 +282,6 @@ class CRM_Mailing_Transactional {
     if (empty($mailingName) || $mailingName == 'UNKNOWN') {
       return;
     }
-
     if (Civi::settings()->get('create_activities')) {
       CRM_Transactional_BAO_RecipientReceipt::initiateReceipt($params);
     }
