@@ -12,6 +12,10 @@ This extension was initially written by Dave Reedy on behalf of [Fuzion](https:/
 
 No special configuration is required for this extension. Just install it!
 
+WARNING
+
+Because of the way CiviCRM processes CC's and BCC's these get VERPIFIED also. Unfortunately these link back to the TO recipient not the BCC or CC. If any email that is used as a CC or a BCC starts bouncing you will end up with a lot of contacts put on hold for bounces not related to their address.
+
 ## How it works
 
 This extension creates a pseudo-CiviMail named "Transactional Emails" which transactional emails are attached to. This could be improved to track by email type with multiple pseudo-CiviMails.
