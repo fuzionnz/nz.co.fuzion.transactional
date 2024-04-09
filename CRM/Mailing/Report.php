@@ -54,7 +54,7 @@ class CRM_Mailing_Report {
   public static function alterReportDisplay(&$var) {
     foreach ($var as $key => $value) {
       $tableName = '';
-      if (empty($value['civicrm_mailing_mailing_subject']) && CRM_Utils_String::startsWith($value['civicrm_mailing_mailing_name'], 'Transactional Email')) {
+      if (empty($value['civicrm_mailing_mailing_subject']) && str_starts_with($value['civicrm_mailing_mailing_name'], 'Transactional Email')) {
         $mailName = explode("Transactional Email", $value['civicrm_mailing_mailing_name']);
         $transactionalType = trim($mailName[1], "( )");
 
