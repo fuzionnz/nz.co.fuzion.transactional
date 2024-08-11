@@ -43,7 +43,7 @@ class CRM_Transactional_BAO_RecipientReceipt extends CRM_Transactional_DAO_Recip
    *  The params passed to hook_civicrm_alterMailParams.
    */
   public static function initiateReceipt(&$params) {
-    if (Civi::settings()->get('invoice_is_email_pdf') && !empty($params['PDFFilename']) && empty($params['isEmailPdf'])) {
+    if (Civi::settings()->get('invoice_is_email_pdf') && !empty($params['PDFFilename']) && empty($params['contributionId'])) {
       return;
     }
     $workflowName = $params['workflow'] ?? $params['valueName'] ?? NULL;
