@@ -164,7 +164,7 @@ class CRM_Transactional_Upgrader extends CRM_Extension_Upgrader_Base {
 
   public function upgrade_4702() {
     $this->ctx->log->info('Applying update 4702');
-     CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_transactional_mapping` (
+    CRM_Core_DAO::executeQuery('CREATE TABLE `civicrm_transactional_mapping` (
       `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
       `entity_id` int(11) DEFAULT NULL,
       `option_group_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -181,12 +181,18 @@ class CRM_Transactional_Upgrader extends CRM_Extension_Upgrader_Base {
   }
 
   public function upgrade_4704() {
+    $this->ctx->log->info('Applying update 4704');
     if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_transactional_mapping', 'option_group_name')) {
       CRM_Core_DAO::executeQuery('ALTER TABLE civicrm_transactional_mapping CHANGE option_group_name mailing_name varchar(255)');
       if (CRM_Core_Config::singleton()->logging && CRM_Core_BAO_SchemaHandler::checkIfFieldExists('log_civicrm_transactional_mapping', 'option_group_name')) {
         CRM_Core_DAO::executeQuery('ALTER TABLE log_civicrm_transactional_mapping CHANGE option_group_name mailing_name varchar(255)');
       }
     }
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing
+      SET scheduled_id = created_id
+      WHERE name LIKE 'Transactional Email%'
+        AND is_completed = 1 AND scheduled_id IS NULL
+    ");
     return TRUE;
   }
 
