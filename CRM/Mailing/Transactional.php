@@ -103,7 +103,7 @@ class CRM_Mailing_Transactional {
    */
   public function getContactAndEmailIds($params) {
     // if being sent from a message template, the contactId may already be there
-    $contact_id = CRM_Utils_Array::value('contactId', $params);
+    $contact_id = $params['contactId'] ?? NULL;
     if ($contact_id) {
       try {
         $email = civicrm_api3('Email', 'getsingle', [
@@ -398,7 +398,7 @@ class CRM_Mailing_Transactional {
         return $dao->activity_id;
       }
     }
-    return CRM_Utils_Array::value('entity_id', $params);
+    return $params['entity_id'] ?? NULL;
   }
 
 }

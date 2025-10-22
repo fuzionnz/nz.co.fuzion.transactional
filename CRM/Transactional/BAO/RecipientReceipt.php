@@ -14,7 +14,7 @@ class CRM_Transactional_BAO_RecipientReceipt extends CRM_Transactional_DAO_Recip
     $entityName = 'RecipientReceipt';
     $hook = empty($params['id']) ? 'create' : 'edit';
 
-    CRM_Utils_Hook::pre($hook, $entityName, CRM_Utils_Array::value('id', $params), $params);
+    CRM_Utils_Hook::pre($hook, $entityName, $params['id'] ?? NULL, $params);
     $instance = new $className();
     $instance->copyValues($params);
     $instance->save();
@@ -53,16 +53,16 @@ class CRM_Transactional_BAO_RecipientReceipt extends CRM_Transactional_DAO_Recip
       if (!empty($workflow[2]) && $workflow[2] == 'receipt') {
         $activityParams = array(
           'subject' => ts('Receipt Email initiated for %1 template.', [1 => $workflowName]),
-          'source_contact_id' => CRM_Utils_Array::value('contactId', $params),
+          'source_contact_id' => $params['contactId'] ?? NULL,
           'activity_type_id' => "ReceiptActivity",
-          'source_record_id' => CRM_Utils_Array::value('contributionId', $params),
+          'source_record_id' => $params['contributionId'] ?? NULL,
           'status_id' => "Scheduled",
         );
         if (!empty($params['tplParams']) && !empty($params['tplParams']['contactID'])) {
           $activityParams['target_contact_id'] = $params['tplParams']['contactID'];
         }
         else {
-          $activityParams['target_contact_id'] = CRM_Utils_Array::value('contactId', $params);
+          $activityParams['target_contact_id'] = $params['contactId'] ?? NULL;
         }
 
         $id = CRM_Core_Session::getLoggedInContactID();
@@ -84,7 +84,7 @@ class CRM_Transactional_BAO_RecipientReceipt extends CRM_Transactional_DAO_Recip
     $activityParams = [
       'id' => $params['receipt_activity_id'],
       'subject' => 'Receipt Sent - ' .  CRM_Utils_Array::value('subject', $params),
-      'details' => CRM_Utils_Array::value('html', $params),
+      'details' => $params['html'] ?? NULL,
       'status_id' => 'Completed',
     ];
     civicrm_api3('activity', 'create', $activityParams);

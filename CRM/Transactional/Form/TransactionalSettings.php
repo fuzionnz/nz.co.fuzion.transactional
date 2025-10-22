@@ -39,7 +39,7 @@ class CRM_Transactional_Form_TransactionalSettings extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
-    Civi::settings()->set('create_activities', CRM_Utils_Array::value('create_activities', $values));
+    Civi::settings()->set('create_activities', $values['create_activities'] ?? NULL);
     CRM_Core_Session::setStatus(E::ts('You settings are saved.'), 'Success', 'success');
 
     parent::postProcess();
