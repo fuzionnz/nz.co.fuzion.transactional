@@ -115,7 +115,7 @@ class CRM_Mailing_Transactional {
           ],
         ]);
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         $contact_id = NULL;
       }
     }
@@ -133,7 +133,7 @@ class CRM_Mailing_Transactional {
             ],
           ]);
         }
-        catch (CiviCRM_API3_Exception $e) {
+        catch (CRM_Core_Exception $e) {
           $contact_id = NULL;
         }
       }
@@ -150,7 +150,7 @@ class CRM_Mailing_Transactional {
         ]);
         $contact_id = $email['contact_id'];
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         $contact_id = NULL;
       }
     }
@@ -175,7 +175,7 @@ class CRM_Mailing_Transactional {
           'id' => $this->mailings[$name]['job_id']
         ]);
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         unset($this->mailings[$name]);
       }
     }
