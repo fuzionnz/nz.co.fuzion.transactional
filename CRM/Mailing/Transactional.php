@@ -297,6 +297,7 @@ class CRM_Mailing_Transactional {
         'job_id' => $job_id,
         'email_id' => $email_id,
         'contact_id' => $contact_id,
+        'mailing_id' => $mailing_id,
         'hash' => $hash,
       ]);
       $event_queue_id = $api['id'];
