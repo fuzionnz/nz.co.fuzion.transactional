@@ -184,6 +184,7 @@ class CRM_Mailing_Transactional {
         'sequential' => 1,
         'name' => $name,
         'created_id' => 'user_contact_id',
+        'scheduled_id' => 'user_contact_id',
         'header_id' => NULL,
         'footer_id' => NULL,
         'reply_id' => NULL,
