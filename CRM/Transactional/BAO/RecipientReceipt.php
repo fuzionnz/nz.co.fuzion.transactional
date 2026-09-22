@@ -51,13 +51,13 @@ class CRM_Transactional_BAO_RecipientReceipt extends CRM_Transactional_DAO_Recip
       $workflow = explode('_', $workflowName);
 
       if (!empty($workflow[2]) && $workflow[2] == 'receipt') {
-        $activityParams = array(
+        $activityParams = [
           'subject' => ts('Receipt Email initiated for %1 template.', [1 => $workflowName]),
           'source_contact_id' => $params['contactId'] ?? NULL,
           'activity_type_id' => "ReceiptActivity",
           'source_record_id' => $params['contributionId'] ?? NULL,
           'status_id' => "Scheduled",
-        );
+        ];
         if (!empty($params['tplParams']) && !empty($params['tplParams']['contactID'])) {
           $activityParams['target_contact_id'] = $params['tplParams']['contactID'];
         }
