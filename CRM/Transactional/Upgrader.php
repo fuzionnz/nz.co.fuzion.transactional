@@ -146,13 +146,13 @@ class CRM_Transactional_Upgrader extends CRM_Extension_Upgrader_Base {
     )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
     ');
 
-    civicrm_api3('OptionValue', 'create', array(
+    civicrm_api3('OptionValue', 'create', [
       'option_group_id' => "activity_type",
       'label' => "Receipt",
       'name' => "ReceiptActivity",
       'description' => "Receipt Sent",
       'icon' => "fa-envelope-o",
-    ));
+    ]);
     return TRUE;
   }
 
